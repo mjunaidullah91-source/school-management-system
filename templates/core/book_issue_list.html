@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Book Issues & Returns | EduManage{% endblock %}
+{% block page_title %}Library Circulation & Overdue Tracking{% endblock %}
+
+{% block content %}
+<div class="card fade-in">
+  <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+    <div class="card-title"><i class="bi bi-arrow-left-right text-primary"></i> Library Issue & Return Log</div>
+    <div class="actions-group">
+      <a href="{% url 'book_list' %}" class="btn btn-outline btn-sm">
+        <i class="bi bi-book"></i> Book Catalog
+      </a>
+      <a href="{% url 'book_issue_add' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-circle-fill"></i> Issue Book
+      </a>
+    </div>
+  </div>
+
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th>Book Title</th>
+            <th>Borrower</th>
+            <th>Type</th>
+            <th>Issue Date</th>
+            <th>Due Date</th>
+            <th>Return Date</th>
+            <th>Fine</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for issue in issues %}
+            <tr>
+              <td><strong>{{ issue.book.title }}</strong></td>
+              <td>
+                {% if issue.student %}
+                  <a href="{% url 'student_detail' issue.student.pk %}" class="text-dark font-weight-bold">
+                    {{ issue.student.name }}
+                  </a> (Roll: {{ issue.student.roll_no }})
+                {% elif issue.staff %}
+                  <strong>{{ issue.staff.name }}</strong> (Emp: {{ issue.staff.emp_id }})
+                {% else %}
+                  —
+                {% endif %}
+              </td>
+              <td><span class="badge badge-secondary">{{ issue.borrower_type }}</span></td>
+              <td>{{ issue.issue_date }}</td>
+              <td>{{ issue.due_date }}</td>
+              <td>{{ issue.return_date|default:'—' }}</td>
+              <td class="{% if issue.fine_amount > 0 %}text-danger font-weight-bold{% endif %}">
+                PKR {{ issue.fine_amount|floatformat:2 }}
+              </td>
+              <td>
+                <span class="badge badge-{% if issue.status == 'Returned' %}success{% elif issue.status == 'Overdue' %}danger{% else %}warning{% endif %}">
+                  {{ issue.status }}
+                </span>
+              </td>
+              <td>
+                {% if issue.status == 'Issued' %}
+                  <a href="{% url 'book_return_action' issue.pk %}" class="btn btn-xs btn-success" title="Mark Returned">
+                    <i class="bi bi-check2"></i> Return Book
+                  </a>
+                {% else %}
+                  <small class="text-muted">Completed</small>
+                {% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="9" class="text-center py-4 text-muted">No library circulation records.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

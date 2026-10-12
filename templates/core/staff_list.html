@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Faculty & Staff Directory | EduManage{% endblock %}
+{% block page_title %}Faculty & Employee Management{% endblock %}
+
+{% block content %}
+<div class="card fade-in">
+  <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+    <div class="card-title"><i class="bi bi-person-lines-fill text-primary"></i> Faculty & Staff Roster</div>
+    <div class="actions-group">
+      <a href="{% url 'staff_id_cards_pdf' %}" target="_blank" class="btn btn-outline btn-sm">
+        <i class="bi bi-card-heading text-teal"></i> Staff ID Cards (PDF)
+      </a>
+      <a href="{% url 'payroll_list' %}" class="btn btn-outline btn-sm">
+        <i class="bi bi-wallet2 text-success"></i> Payroll Register
+      </a>
+      <a href="{% url 'staff_add' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-person-plus-fill"></i> Add Staff Member
+      </a>
+    </div>
+  </div>
+
+  <!-- Search & Filter Toolbar -->
+  <div class="filter-toolbar p-3" style="background:#F8FAFC; border-bottom:1px solid #E2E8F0;">
+    <form method="get" class="filter-form" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+      <input type="text" name="q" value="{{ search_query }}" class="form-control form-control-sm" placeholder="Search by name, emp ID, role..." style="max-width:240px;">
+      
+      <select name="department" class="form-select form-select-sm" style="max-width:180px;">
+        <option value="">All Departments</option>
+        {% for d, d_lbl in departments %}
+          <option value="{{ d }}" {% if selected_dept == d %}selected{% endif %}>{{ d_lbl }}</option>
+        {% endfor %}
+      </select>
+
+      <button type="submit" class="btn btn-sm btn-secondary"><i class="bi bi-search"></i> Filter</button>
+      <a href="{% url 'staff_list' %}" class="btn btn-sm btn-outline">Reset</a>
+    </form>
+  </div>
+
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th>Emp ID</th>
+            <th>Name</th>
+            <th>Department</th>
+            <th>Designation</th>
+            <th>Contact</th>
+            <th>Basic Salary</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for sm in staff_members %}
+            <tr>
+              <td><strong>{{ sm.emp_id }}</strong></td>
+              <td>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  {% if sm.photo %}
+                    <img src="{{ sm.photo.url }}" alt="{{ sm.name }}" style="width:32px; height:32px; border-radius:50%; object-fit:cover;">
+                  {% else %}
+                    <div class="user-avatar" style="width:32px; height:32px; font-size:12px;">{{ sm.name|first|upper }}</div>
+                  {% endif %}
+                  <div>
+                    <strong>{{ sm.name }}</strong>
+                    <div class="text-muted" style="font-size:11px;">{{ sm.qualification }}</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="badge badge-info">{{ sm.department }}</span></td>
+              <td>{{ sm.designation }}</td>
+              <td>{{ sm.contact }}</td>
+              <td>PKR {{ sm.basic_salary|floatformat:2 }}</td>
+              <td>
+                {% if sm.is_active %}
+                  <span class="badge badge-success">Active</span>
+                {% else %}
+                  <span class="badge badge-secondary">Inactive</span>
+                {% endif %}
+              </td>
+              <td>
+                <div class="btn-group">
+                  <a href="{% url 'staff_edit' sm.pk %}" class="btn btn-xs btn-outline" title="Edit">
+                    <i class="bi bi-pencil-fill"></i>
+                  </a>
+                  <a href="{% url 'staff_delete' sm.pk %}" class="btn btn-xs btn-danger" title="Delete">
+                    <i class="bi bi-trash-fill"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="8" class="text-center py-4 text-muted">No staff records found.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

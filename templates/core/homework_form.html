@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} | EduManage{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="form-container fade-in" style="max-width: 700px; margin: 0 auto;">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><i class="bi bi-journal-plus text-primary"></i> {{ title }}</div>
+      <a href="{% url 'homework_list' %}" class="btn btn-outline btn-sm"><i class="bi bi-arrow-left"></i> Back</a>
+    </div>
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Class</label>
+            {{ form.student_class }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Section</label>
+            {{ form.section }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Subject</label>
+            {{ form.subject }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Teacher / Faculty</label>
+            {{ form.teacher }}
+          </div>
+          <div class="form-group" style="grid-column: span 2;">
+            <label class="form-label">Assignment Title / Topic</label>
+            {{ form.title }}
+          </div>
+          <div class="form-group" style="grid-column: span 2;">
+            <label class="form-label">Homework Description & Questions</label>
+            {{ form.description }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Assigned Date</label>
+            {{ form.assigned_date }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Submission Due Date</label>
+            {{ form.due_date }}
+          </div>
+        </div>
+
+        <div class="form-actions mt-4" style="display:flex; justify-content:flex-end; gap:12px;">
+          <a href="{% url 'homework_list' %}" class="btn btn-secondary">Cancel</a>
+          <button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> Publish Homework</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

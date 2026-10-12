@@ -1,0 +1,438 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}Class Timetable | EduManage{% endblock %}
+{% block page_title %}Class Routine & Period Timetable{% endblock %}
+
+{% block content %}
+<div class="card fade-in" style="border:none; box-shadow:0 4px 20px rgba(0,0,0,0.06); border-radius:12px;">
+  <!-- Header Toolbar -->
+  <div class="card-header" style="background:#fff; border-bottom:1px solid #E2E8F0; padding:16px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; border-top-left-radius:12px; border-top-right-radius:12px;">
+    <div>
+      <h3 style="margin:0; font-size:1.15rem; font-weight:700; color:#1E293B; display:flex; align-items:center; gap:8px;">
+        <i class="bi bi-calendar3" style="color:#3B82F6;"></i> Class Timetable & Lecture Schedule
+      </h3>
+      <div style="font-size:0.8rem; color:#64748B; margin-top:2px;">
+        Click any lecture to edit timing or use arrow buttons to shift periods.
+      </div>
+    </div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <a href="{% url 'timetable_auto_generate_all' %}?student_class={{ selected_class }}" class="btn btn-outline btn-sm" title="Automatically schedule unscheduled subjects">
+        <i class="bi bi-magic" style="color:#8B5CF6;"></i> Auto-Schedule Subjects
+      </a>
+      <a href="{% url 'timetable_add' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-circle-fill"></i> Add Period
+      </a>
+    </div>
+  </div>
+
+  <!-- Class & Section Selector Bar -->
+  <div class="filter-toolbar p-3" style="background:#F8FAFC; border-bottom:1px solid #E2E8F0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+    <form method="get" class="filter-form" style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+      <div style="display:flex; align-items:center; gap:6px;">
+        <label style="font-size:0.82rem; font-weight:600; color:#475569; margin:0;">Class:</label>
+        <select name="student_class" class="form-select form-select-sm" style="min-width:140px;" onchange="this.form.submit()">
+          {% for c, c_lbl in classes %}
+            <option value="{{ c }}" {% if selected_class == c %}selected{% endif %}>{{ c_lbl }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:6px;">
+        <label style="font-size:0.82rem; font-weight:600; color:#475569; margin:0;">Section:</label>
+        <select name="section" class="form-select form-select-sm" style="min-width:120px;" onchange="this.form.submit()">
+          {% for s, s_lbl in sections %}
+            <option value="{{ s }}" {% if selected_section == s %}selected{% endif %}>{{ s_lbl }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <button type="submit" class="btn btn-sm btn-secondary"><i class="bi bi-arrow-repeat"></i> Refresh</button>
+    </form>
+
+    <div style="display:flex; align-items:center; gap:14px; font-size:0.8rem; color:#64748B;">
+      <span style="display:flex; align-items:center; gap:5px;"><span style="width:10px; height:10px; border-radius:50%; background:#2563EB; display:inline-block;"></span> Scheduled Period</span>
+      <span style="display:flex; align-items:center; gap:5px;"><span style="width:10px; height:10px; border-radius:50%; background:#E2E8F0; display:inline-block;"></span> Empty Slot</span>
+    </div>
+  </div>
+
+  <!-- Live Toast Notification Container -->
+  <div id="liveToast" style="display:none; position:fixed; bottom:24px; right:24px; z-index:9999; background:#1E293B; color:#fff; padding:12px 20px; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.2); font-size:0.9rem; align-items:center; gap:10px; transition:all 0.3s ease;">
+    <i class="bi bi-check-circle-fill" style="color:#10B981; font-size:1.1rem;"></i>
+    <span id="toastMessage">Action completed</span>
+  </div>
+
+  <!-- Timetable Interactive Table -->
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table mb-0 timetable-grid" style="border-collapse:separate; border-spacing:0; width:100%;">
+        <thead>
+          <tr style="background:#F1F5F9;">
+            <th style="width:110px; padding:14px 12px; font-weight:700; color:#334155; border-bottom:2px solid #CBD5E1; text-align:center;">Day</th>
+            {% for p in periods %}
+              <th style="padding:10px 8px; font-weight:700; color:#334155; border-bottom:2px solid #CBD5E1; text-align:center; min-width:130px;">
+                <div style="font-size:0.85rem;">Period {{ p }}</div>
+                <div style="font-size:0.72rem; font-weight:500; color:#64748B; margin-top:2px;">
+                  {% if p == 1 %}08:00 - 08:45{% elif p == 2 %}08:45 - 09:30{% elif p == 3 %}09:30 - 10:15{% elif p == 4 %}10:15 - 11:00{% elif p == 5 %}11:30 - 12:15{% elif p == 6 %}12:15 - 01:00{% elif p == 7 %}01:00 - 01:40{% elif p == 8 %}01:40 - 02:20{% endif %}
+                </div>
+              </th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for day in days %}
+            <tr style="border-bottom:1px solid #E2E8F0;">
+              <td style="background:#FAFBFD; font-weight:700; color:#1E293B; vertical-align:middle; text-align:center; border-right:1px solid #E2E8F0; padding:12px 8px;">
+                {{ day }}
+              </td>
+              {% for p in periods %}
+                {% with day_row=matrix|dict_get:day %}
+                  {% with slot=day_row|dict_get:p %}
+                    <td style="padding:6px; vertical-align:top; height:95px; border-right:1px solid #F1F5F9; position:relative;">
+                      {% if slot %}
+                        <div class="tt-slot-card"
+                             data-slot-id="{{ slot.id }}"
+                             data-subject-id="{{ slot.subject.id }}"
+                             data-subject-name="{{ slot.subject.name }}"
+                             data-day="{{ slot.day }}"
+                             data-period="{{ slot.period_number }}"
+                             data-start="{{ slot.start_time|time:'H:i' }}"
+                             data-end="{{ slot.end_time|time:'H:i' }}"
+                             data-teacher-id="{{ slot.teacher.id|default:'' }}"
+                             data-teacher-name="{{ slot.teacher.name|default:'Teacher' }}"
+                             data-room="{{ slot.room_number }}"
+                             style="background:#FFFFFF; border:1px solid #DBEAFE; border-left:4px solid #2563EB; padding:8px 10px; border-radius:8px; height:100%; box-shadow:0 2px 4px rgba(37,99,235,0.06); display:flex; flex-direction:column; justify-content:space-between; cursor:pointer; transition:all 0.2s ease;">
+                          <div>
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                              <strong style="color:#1E3A8A; font-size:0.83rem; line-height:1.2;">{{ slot.subject.name }}</strong>
+                              <span style="font-size:0.68rem; background:#DBEAFE; color:#1E40AF; padding:1px 5px; border-radius:4px; font-weight:700;">{{ slot.subject.code }}</span>
+                            </div>
+                            <div style="color:#64748B; font-size:0.72rem; margin-top:4px; display:flex; align-items:center; gap:4px;">
+                              <i class="bi bi-clock"></i> {{ slot.start_time|time:"g:i" }} - {{ slot.end_time|time:"g:i A" }}
+                            </div>
+                            <div style="color:#0D9488; font-size:0.72rem; margin-top:2px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                              <i class="bi bi-person"></i> {{ slot.teacher.name|default:'Unassigned' }}
+                            </div>
+                          </div>
+
+                          <!-- Slot Controls: Shift Buttons & Room Badge -->
+                          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; padding-top:4px; border-top:1px dashed #E2E8F0;">
+                            <span style="font-size:0.68rem; background:#F1F5F9; color:#475569; padding:1px 5px; border-radius:3px;">
+                              <i class="bi bi-geo-alt"></i> {{ slot.room_number }}
+                            </span>
+                            <div style="display:flex; gap:3px;" onclick="event.stopPropagation();">
+                              {% if p > 1 %}
+                                <button type="button" class="btn-shift" title="Shift Period Left (◀ Period {{ p|add:'-1' }})" onclick="shiftSlot({{ slot.id }}, -1)" style="border:1px solid #CBD5E1; background:#fff; border-radius:4px; padding:1px 6px; font-size:0.7rem; cursor:pointer; color:#475569;">
+                                  ◀
+                                </button>
+                              {% endif %}
+                              {% if p < 8 %}
+                                <button type="button" class="btn-shift" title="Shift Period Right (▶ Period {{ p|add:'1' }})" onclick="shiftSlot({{ slot.id }}, 1)" style="border:1px solid #CBD5E1; background:#fff; border-radius:4px; padding:1px 6px; font-size:0.7rem; cursor:pointer; color:#475569;">
+                                  ▶
+                                </button>
+                              {% endif %}
+                            </div>
+                          </div>
+                        </div>
+                      {% else %}
+                        <!-- Empty Cell with Add Action -->
+                        <div class="tt-empty-cell" onclick="openAddModal('{{ day }}', {{ p }})" style="border:1px dashed #CBD5E1; border-radius:8px; height:100%; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:4px; color:#94A3B8; font-size:0.75rem; cursor:pointer; background:#FAFAFA; transition:all 0.2s ease;">
+                          <i class="bi bi-plus-circle" style="font-size:0.9rem;"></i>
+                          <span>Add</span>
+                        </div>
+                      {% endif %}
+                    </td>
+                  {% endwith %}
+                {% endwith %}
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+<!--  INTERACTIVE EDIT / ADD LECTURE MODAL                                           -->
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+<div id="lectureModal" class="custom-modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.55); backdrop-filter:blur(3px); z-index:10000; justify-content:center; align-items:center; padding:16px;">
+  <div class="custom-modal-content fade-in" style="background:#fff; border-radius:12px; width:100%; max-width:540px; box-shadow:0 20px 40px rgba(0,0,0,0.25); overflow:hidden;">
+    <div style="background:#F8FAFC; border-bottom:1px solid #E2E8F0; padding:16px 20px; display:flex; justify-content:space-between; align-items:center;">
+      <h4 id="modalTitle" style="margin:0; font-size:1.1rem; font-weight:700; color:#1E293B;">
+        <i class="bi bi-calendar-event text-primary"></i> Edit Lecture Schedule
+      </h4>
+      <button type="button" onclick="closeLectureModal()" style="border:none; background:transparent; font-size:1.2rem; cursor:pointer; color:#64748B;">&times;</button>
+    </div>
+
+    <form id="lectureForm" onsubmit="saveLectureForm(event)" style="padding:20px;">
+      <input type="hidden" id="modalSlotId" name="slot_id" value="">
+      <input type="hidden" id="modalAction" name="action" value="quick_update">
+      <input type="hidden" id="modalClass" name="student_class" value="{{ selected_class }}">
+      <input type="hidden" id="modalSection" name="section" value="{{ selected_section }}">
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+        <div style="grid-column: span 2;">
+          <label class="form-label" style="font-weight:600; font-size:0.83rem; margin-bottom:4px; display:block;">Subject *</label>
+          <select id="modalSubject" name="subject_id" class="form-select" required style="width:100%;">
+            <option value="">-- Select Subject --</option>
+            {% for s in class_subjects %}
+              <option value="{{ s.id }}">{{ s.name }} ({{ s.code }}) - Class {{ s.student_class|default:'All' }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label class="form-label" style="font-weight:600; font-size:0.83rem; margin-bottom:4px; display:block;">Day</label>
+          <select id="modalDay" name="day" class="form-select" required style="width:100%;">
+            {% for d in days %}
+              <option value="{{ d }}">{{ d }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label class="form-label" style="font-weight:600; font-size:0.83rem; margin-bottom:4px; display:block;">Period Number (1 - 8)</label>
+          <select id="modalPeriod" name="period_number" class="form-select" onchange="autoFillPeriodTimes(this.value)" required style="width:100%;">
+            {% for p in periods %}
+              <option value="{{ p }}">Period {{ p }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label class="form-label" style="font-weight:600; font-size:0.83rem; margin-bottom:4px; display:block;">Start Time</label>
+          <input type="time" id="modalStartTime" name="start_time" class="form-control" required style="width:100%;">
+        </div>
+
+        <div>
+          <label class="form-label" style="font-weight:600; font-size:0.83rem; margin-bottom:4px; display:block;">End Time</label>
+          <input type="time" id="modalEndTime" name="end_time" class="form-control" required style="width:100%;">
+        </div>
+
+        <div>
+          <label class="form-label" style="font-weight:600; font-size:0.83rem; margin-bottom:4px; display:block;">Teacher / Faculty</label>
+          <select id="modalTeacher" name="teacher_id" class="form-select" style="width:100%;">
+            <option value="">-- Unassigned --</option>
+            {% for t in staff_list %}
+              <option value="{{ t.id }}">{{ t.name }} ({{ t.designation }})</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label class="form-label" style="font-weight:600; font-size:0.83rem; margin-bottom:4px; display:block;">Classroom / Lab</label>
+          <input type="text" id="modalRoom" name="room_number" class="form-control" value="Room {{ selected_class }}" style="width:100%;">
+        </div>
+      </div>
+
+      <!-- Quick Shift Action Bar inside Modal -->
+      <div id="modalShiftBar" style="background:#F1F5F9; padding:10px 14px; border-radius:8px; margin-top:16px; display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-size:0.8rem; font-weight:600; color:#475569;">Quick Period Move:</span>
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="btn btn-outline btn-sm" onclick="modalShift(-1)"><i class="bi bi-chevron-left"></i> Earlier Period</button>
+          <button type="button" class="btn btn-outline btn-sm" onclick="modalShift(1)">Later Period <i class="bi bi-chevron-right"></i></button>
+        </div>
+      </div>
+
+      <!-- Footer Buttons -->
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; padding-top:14px; border-top:1px solid #E2E8F0;">
+        <div>
+          <button type="button" id="modalDeleteBtn" class="btn btn-danger btn-sm" onclick="deleteModalSlot()" style="display:none;">
+            <i class="bi bi-trash"></i> Delete Slot
+          </button>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="closeLectureModal()">Cancel</button>
+          <button type="submit" id="modalSubmitBtn" class="btn btn-primary btn-sm">
+            <i class="bi bi-check2"></i> Save Schedule
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+.tt-slot-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(37,99,235,0.14) !important;
+  border-color: #93C5FD !important;
+}
+.tt-empty-cell:hover {
+  background: #F1F5F9 !important;
+  border-color: #3B82F6 !important;
+  color: #2563EB !important;
+}
+.btn-shift:hover {
+  background: #2563EB !important;
+  color: #fff !important;
+  border-color: #2563EB !important;
+}
+</style>
+
+<script>
+const defaultTimings = {{ default_timings_json|safe }};
+
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+const csrftoken = getCookie('csrftoken');
+
+function showToast(message, isError=false) {
+  const toast = document.getElementById('liveToast');
+  const toastMsg = document.getElementById('toastMessage');
+  toastMsg.textContent = message;
+  toast.style.background = isError ? '#EF4444' : '#1E293B';
+  toast.style.display = 'flex';
+  setTimeout(() => {
+    toast.style.display = 'none';
+  }, 3500);
+}
+
+// Auto fill start and end times based on period number
+function autoFillPeriodTimes(periodNum) {
+  const timing = defaultTimings[periodNum];
+  if (timing) {
+    document.getElementById('modalStartTime').value = timing[0];
+    document.getElementById('modalEndTime').value = timing[1];
+  }
+}
+
+// Attach click listeners to all lecture cards
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.tt-slot-card').forEach(card => {
+    card.addEventListener('click', () => {
+      openEditModal(card);
+    });
+  });
+});
+
+function openEditModal(card) {
+  document.getElementById('modalTitle').innerHTML = '<i class="bi bi-pencil-square text-primary"></i> Edit Lecture: ' + card.dataset.subjectName;
+  document.getElementById('modalSlotId').value = card.dataset.slotId;
+  document.getElementById('modalAction').value = 'quick_update';
+  document.getElementById('modalSubject').value = card.dataset.subjectId;
+  document.getElementById('modalDay').value = card.dataset.day;
+  document.getElementById('modalPeriod').value = card.dataset.period;
+  document.getElementById('modalStartTime').value = card.dataset.start;
+  document.getElementById('modalEndTime').value = card.dataset.end;
+  document.getElementById('modalTeacher').value = card.dataset.teacherId;
+  document.getElementById('modalRoom').value = card.dataset.room;
+  document.getElementById('modalShiftBar').style.display = 'flex';
+  document.getElementById('modalDeleteBtn').style.display = 'inline-block';
+  document.getElementById('modalSubmitBtn').innerHTML = '<i class="bi bi-check2"></i> Update Lecture';
+  document.getElementById('lectureModal').style.display = 'flex';
+}
+
+function openAddModal(day, period) {
+  document.getElementById('modalTitle').innerHTML = '<i class="bi bi-plus-circle text-primary"></i> Schedule Lecture for ' + day + ' (Period ' + period + ')';
+  document.getElementById('modalSlotId').value = '';
+  document.getElementById('modalAction').value = 'create_slot';
+  document.getElementById('modalSubject').value = '';
+  document.getElementById('modalDay').value = day;
+  document.getElementById('modalPeriod').value = period;
+  autoFillPeriodTimes(period);
+  document.getElementById('modalTeacher').value = '';
+  document.getElementById('modalRoom').value = 'Room {{ selected_class }}';
+  document.getElementById('modalShiftBar').style.display = 'none';
+  document.getElementById('modalDeleteBtn').style.display = 'none';
+  document.getElementById('modalSubmitBtn').innerHTML = '<i class="bi bi-check2"></i> Schedule Lecture';
+  document.getElementById('lectureModal').style.display = 'flex';
+}
+
+function closeLectureModal() {
+  document.getElementById('lectureModal').style.display = 'none';
+}
+
+// 1-Click Shift Slot (left / right)
+function shiftSlot(slotId, direction) {
+  fetch("{% url 'timetable_shift_ajax' %}", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'X-CSRFToken': csrftoken
+    },
+    body: new URLSearchParams({
+      'slot_id': slotId,
+      'action': 'shift_period',
+      'direction': direction
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      showToast(data.message);
+      setTimeout(() => { window.location.reload(); }, 600);
+    } else {
+      showToast(data.error || 'Could not move lecture', true);
+    }
+  })
+  .catch(err => {
+    showToast('Network error occurred', true);
+  });
+}
+
+function modalShift(direction) {
+  const curPeriod = parseInt(document.getElementById('modalPeriod').value);
+  const newPeriod = curPeriod + direction;
+  if (newPeriod >= 1 && newPeriod <= 8) {
+    document.getElementById('modalPeriod').value = newPeriod;
+    autoFillPeriodTimes(newPeriod);
+  }
+}
+
+function saveLectureForm(e) {
+  e.preventDefault();
+  const form = document.getElementById('lectureForm');
+  const formData = new FormData(form);
+
+  fetch("{% url 'timetable_shift_ajax' %}", {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': csrftoken
+    },
+    body: formData
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      showToast(data.message);
+      closeLectureModal();
+      setTimeout(() => { window.location.reload(); }, 600);
+    } else {
+      showToast(data.error || 'Could not save schedule', true);
+    }
+  })
+  .catch(err => {
+    showToast('Error saving timetable slot', true);
+  });
+}
+
+function deleteModalSlot() {
+  const slotId = document.getElementById('modalSlotId').value;
+  if (!slotId) return;
+  if (confirm('Are you sure you want to remove this lecture from the timetable?')) {
+    window.location.href = `/timetable/${slotId}/delete/`;
+  }
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+  const modal = document.getElementById('lectureModal');
+  if (event.target == modal) {
+    closeLectureModal();
+  }
+}
+</script>
+{% endblock %}

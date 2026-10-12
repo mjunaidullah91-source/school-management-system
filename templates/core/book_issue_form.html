@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} | EduManage{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="form-container fade-in" style="max-width: 700px; margin: 0 auto;">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><i class="bi bi-arrow-right-circle text-primary"></i> {{ title }}</div>
+      <a href="{% url 'book_issue_list' %}" class="btn btn-outline btn-sm"><i class="bi bi-arrow-left"></i> Back</a>
+    </div>
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-grid">
+          <div class="form-group" style="grid-column: span 2;">
+            <label class="form-label">Select Book</label>
+            {{ form.book }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Borrower Type</label>
+            {{ form.borrower_type }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Issue Date</label>
+            {{ form.issue_date }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">If Student (Select Student)</label>
+            {{ form.student }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">If Staff (Select Staff Member)</label>
+            {{ form.staff }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Due Return Date</label>
+            {{ form.due_date }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Circulation Status</label>
+            {{ form.status }}
+          </div>
+          <div class="form-group" style="grid-column: span 2;">
+            <label class="form-label">Remarks</label>
+            {{ form.remarks }}
+          </div>
+        </div>
+
+        <div class="form-actions mt-4" style="display:flex; justify-content:flex-end; gap:12px;">
+          <a href="{% url 'book_issue_list' %}" class="btn btn-secondary">Cancel</a>
+          <button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> Confirm Book Issue</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

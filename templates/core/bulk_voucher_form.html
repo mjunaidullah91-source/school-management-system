@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Bulk Fee Voucher Builder | EduManage{% endblock %}
+{% block page_title %}Dynamic Fee Voucher & Challan Builder{% endblock %}
+
+{% block content %}
+<div class="form-container fade-in" style="max-width: 800px; margin: 0 auto;">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><i class="bi bi-receipt text-primary"></i> 1-Click Monthly Class Fee Voucher Generator</div>
+      <a href="{% url 'fee_list' %}" class="btn btn-outline btn-sm"><i class="bi bi-arrow-left"></i> Back to Ledger</a>
+    </div>
+    <div class="card-body">
+      <p class="text-muted mb-4">
+        This automated tool creates monthly fee vouchers for all active students in the selected class/section. It automatically applies individual student scholarship/concession discounts and prepares 3-part bank challans ready for printing.
+      </p>
+
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Target Class</label>
+            {{ form.student_class }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Target Section</label>
+            {{ form.section }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Billing Fee Category</label>
+            {{ form.fee_type }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Billing Month</label>
+            {{ form.month }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Billing Year</label>
+            {{ form.year }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Payment Due Date</label>
+            {{ form.due_date }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Optional Exam Fee (PKR)</label>
+            {{ form.exam_fee }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Optional Other / Lab Charges (PKR)</label>
+            {{ form.other_fee }}
+          </div>
+        </div>
+
+        <div class="form-actions mt-4" style="display:flex; justify-content:flex-end; gap:12px;">
+          <a href="{% url 'fee_list' %}" class="btn btn-secondary">Cancel</a>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-lightning-charge-fill"></i> Generate Batch Vouchers Now
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

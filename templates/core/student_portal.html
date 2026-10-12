@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+{% block title %}Student / Parent Portal | EduManage{% endblock %}
+{% block page_title %}Student & Parent Dashboard{% endblock %}
+
+{% block content %}
+<div class="portal-welcome card mb-4">
+  <div class="card-body" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+    <div style="display:flex; align-items:center; gap:16px;">
+      {% if student.photo %}
+        <img src="{{ student.photo.url }}" alt="{{ student.name }}" style="width:64px; height:64px; border-radius:50%; object-fit:cover; border:2px solid #2563EB;">
+      {% else %}
+        <div class="user-avatar" style="width:64px; height:64px; font-size:24px;">{{ student.name|first|upper }}</div>
+      {% endif %}
+      <div>
+        <h3 class="mb-1">{{ student.name }} (Roll No: {{ student.roll_no }})</h3>
+        <p class="text-muted mb-0">Class: <strong>Class {{ student.student_class }} (Section {{ student.section }})</strong> &bull; Father: <strong>{{ student.father_name }}</strong></p>
+      </div>
+    </div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <a href="{% url 'student_change_password' %}" class="btn btn-warning btn-sm">
+        <i class="bi bi-key-fill"></i> Change Password
+      </a>
+      <a href="{% url 'result_pdf' student.pk %}" target="_blank" class="btn btn-primary btn-sm">
+        <i class="bi bi-file-earmark-pdf"></i> Download Report Card
+      </a>
+      <a href="{% url 'student_fee_detail' student.pk %}" class="btn btn-outline btn-sm">
+        <i class="bi bi-receipt"></i> Full Fee Ledger
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ── OVERVIEW STATS ────────────────────────────────────── -->
+<div class="stat-grid mb-4">
+  <div class="stat-card fade-in">
+    <div class="stat-icon icon-green">
+      <i class="bi bi-check-circle-fill"></i>
+    </div>
+    <div class="stat-info">
+      <span class="stat-label">Total Fees Cleared</span>
+      <h3>PKR {{ paid_total|floatformat:2 }}</h3>
+      <span class="stat-sub text-success">Verified Payments</span>
+    </div>
+  </div>
+
+  <div class="stat-card fade-in">
+    <div class="stat-icon icon-amber">
+      <i class="bi bi-exclamation-circle-fill"></i>
+    </div>
+    <div class="stat-info">
+      <span class="stat-label">Pending Dues</span>
+      <h3 class="{% if due_total > 0 %}text-danger{% else %}text-success{% endif %}">PKR {{ due_total|floatformat:2 }}</h3>
+      <span class="stat-sub">Current Balance</span>
+    </div>
+  </div>
+
+  <div class="stat-card fade-in">
+    <div class="stat-icon icon-purple">
+      <i class="bi bi-person-check-fill"></i>
+    </div>
+    <div class="stat-info">
+      <span class="stat-label">Overall Attendance</span>
+      <h3>{{ attendance_pct }}%</h3>
+      <span class="stat-sub text-muted">Academic Term</span>
+    </div>
+  </div>
+</div>
+
+<div class="row-2col">
+  <!-- Fee Vouchers & Payment History -->
+  <div class="card fade-in">
+    <div class="card-header">
+      <div class="card-title"><i class="bi bi-receipt text-primary"></i> Fee Vouchers & Challans</div>
+      <a href="{% url 'student_fee_detail' student.pk %}" class="btn-link">View All</a>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th>Voucher #</th>
+              <th>Month/Year</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Challan</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for fee in fees %}
+              <tr>
+                <td><strong>{{ fee.voucher_no }}</strong></td>
+                <td>{{ fee.month }} {{ fee.year }}</td>
+                <td>PKR {{ fee.amount|floatformat:2 }}</td>
+                <td>
+                  <span class="badge badge-{% if fee.status == 'Paid' %}success{% elif fee.status == 'Partial' %}warning{% else %}danger{% endif %}">
+                    {{ fee.status }}
+                  </span>
+                </td>
+                <td>
+                  <a href="{% url 'fee_voucher_pdf' fee.pk %}" target="_blank" class="btn btn-xs btn-outline">
+                    <i class="bi bi-printer"></i> PDF
+                  </a>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="5" class="text-center py-4 text-muted">No fee vouchers recorded.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Academic Examination Results -->
+  <div class="card fade-in">
+    <div class="card-header">
+      <div class="card-title"><i class="bi bi-award-fill text-teal"></i> Examination Results</div>
+      <a href="{% url 'student_result_detail' student.pk %}" class="btn-link">Detailed Card</a>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th>Subject</th>
+              <th>Exam</th>
+              <th>Obtained</th>
+              <th>Grade</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for res in results %}
+              <tr>
+                <td><strong>{{ res.subject.name }}</strong></td>
+                <td>{{ res.exam_type }} {{ res.year }}</td>
+                <td>{{ res.marks_obtained }} / {{ res.max_marks }} ({{ res.percentage }}%)</td>
+                <td><span class="badge badge-{% if res.grade == 'A+' or res.grade == 'A' %}success{% elif res.grade == 'F' %}danger{% else %}info{% endif %}">{{ res.grade }}</span></td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="4" class="text-center py-4 text-muted">No examination results published yet.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Daily Homework Assignments -->
+<div class="card mt-4 fade-in">
+  <div class="card-header">
+    <div class="card-title"><i class="bi bi-journal-text text-success"></i> Class Homework & Tasks</div>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th>Subject</th>
+            <th>Task Title</th>
+            <th>Description</th>
+            <th>Assigned Date</th>
+            <th>Due Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for hw in homework %}
+            <tr>
+              <td><strong>{{ hw.subject.name }}</strong></td>
+              <td>{{ hw.title }}</td>
+              <td>{{ hw.description|truncatechars:80 }}</td>
+              <td>{{ hw.assigned_date }}</td>
+              <td><span class="badge badge-warning">{{ hw.due_date }}</span></td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="5" class="text-center py-4 text-muted">No homework pending. Great job!</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

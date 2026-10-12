@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}School Settings & Branding | EduManage{% endblock %}
+{% block page_title %}School Profile & System Configuration{% endblock %}
+
+{% block content %}
+<div class="form-container fade-in" style="max-width: 850px; margin: 0 auto;">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><i class="bi bi-sliders text-primary"></i> School Profile, Banking & Report Branding</div>
+    </div>
+    <div class="card-body">
+      <p class="text-muted mb-4">
+        These settings are dynamically injected across all generated <strong>Bank Challans, Fee Vouchers, Student Result Cards, Admit Cards, ID Cards, and Official Certificates</strong>.
+      </p>
+
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-grid">
+          <div class="form-group" style="grid-column: span 2;">
+            <label class="form-label">School / Institute Name</label>
+            {{ form.school_name }}
+          </div>
+          <div class="form-group" style="grid-column: span 2;">
+            <label class="form-label">School Tagline / Motto</label>
+            {{ form.tagline }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Official Registration #</label>
+            {{ form.registration_no }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Principal / Head of Institution</label>
+            {{ form.principal_name }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Contact Phone / Landline</label>
+            {{ form.contact_phone }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Official Email</label>
+            {{ form.email }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Website URL</label>
+            {{ form.website }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Currency Symbol</label>
+            {{ form.currency_symbol }}
+          </div>
+          <div class="form-group" style="grid-column: span 2;">
+            <label class="form-label">Campus Physical Address</label>
+            {{ form.address }}
+          </div>
+          
+          <!-- Banking Configuration Section -->
+          <div class="form-group" style="grid-column: span 2; margin-top:16px;">
+            <h4 style="color:#1E3A5F; border-bottom:2px solid #E2E8F0; padding-bottom:6px;"><i class="bi bi-bank"></i> Banking Information (For Fee Challans)</h4>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Designated Bank Name</label>
+            {{ form.bank_name }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Bank Branch Name & Code</label>
+            {{ form.bank_branch }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Bank Account Title</label>
+            {{ form.bank_account_title }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Bank Account Number</label>
+            {{ form.bank_account_no }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">IBAN Number</label>
+            {{ form.iban }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Late Fee Fine Per Day (PKR)</label>
+            {{ form.late_fee_per_day }}
+          </div>
+        </div>
+
+        <div class="form-actions mt-4" style="display:flex; justify-content:flex-end; gap:12px;">
+          <button type="submit" class="btn btn-primary"><i class="bi bi-check2-circle"></i> Save Settings & Update Branding</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

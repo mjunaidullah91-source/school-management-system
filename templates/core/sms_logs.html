@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}SMS & WhatsApp Logs | EduManage{% endblock %}
+{% block page_title %}Automated Notification Dispatch Logs{% endblock %}
+
+{% block content %}
+<div class="card fade-in">
+  <div class="card-header">
+    <div class="card-title"><i class="bi bi-chat-dots-fill text-primary"></i> SMS & WhatsApp Automated Alert Logs</div>
+  </div>
+
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>Recipient Contact</th>
+            <th>Student</th>
+            <th>Alert Type</th>
+            <th>Message Content</th>
+            <th>Gateway Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in logs %}
+            <tr>
+              <td><small>{{ log.sent_at|date:"Y-m-d H:i" }}</small></td>
+              <td><strong>{{ log.recipient }}</strong></td>
+              <td>
+                {% if log.student %}
+                  <a href="{% url 'student_detail' log.student.pk %}" class="text-dark">{{ log.student.name }}</a>
+                {% else %}
+                  —
+                {% endif %}
+              </td>
+              <td><span class="badge badge-info">{{ log.alert_type }}</span></td>
+              <td style="max-width:350px;">{{ log.message }}</td>
+              <td><span class="badge badge-success"><i class="bi bi-check-all"></i> {{ log.status }}</span></td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="6" class="text-center py-4 text-muted">No alert notifications sent yet.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

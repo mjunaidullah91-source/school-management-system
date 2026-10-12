@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} | EduManage{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="form-container fade-in" style="max-width: 800px; margin: 0 auto;">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><i class="bi bi-receipt text-primary"></i> {{ title }}</div>
+      <a href="{% url 'fee_list' %}" class="btn btn-outline btn-sm"><i class="bi bi-arrow-left"></i> Back</a>
+    </div>
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-grid">
+          <div class="form-group" style="grid-column: span 2;">
+            <label class="form-label">Student</label>
+            {{ form.student }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Fee Category</label>
+            {{ form.fee_type }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Month</label>
+            {{ form.month }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Year</label>
+            {{ form.year }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tuition Fee (PKR)</label>
+            {{ form.tuition_fee }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Admission Fee (PKR)</label>
+            {{ form.admission_fee }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Exam Fee (PKR)</label>
+            {{ form.exam_fee }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Other / Lab Charges (PKR)</label>
+            {{ form.other_fee }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Late Fee Fine (PKR)</label>
+            {{ form.late_fee_fine }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Scholarship / Concession Discount (PKR)</label>
+            {{ form.concession }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Paid Amount (PKR)</label>
+            {{ form.paid_amount }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Payment Due Date</label>
+            {{ form.due_date }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Payment Date</label>
+            {{ form.paid_date }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Payment Mode</label>
+            {{ form.payment_mode }}
+          </div>
+          <div class="form-group" style="grid-column: span 2;">
+            <label class="form-label">Remarks / Banking Reference</label>
+            {{ form.remarks }}
+          </div>
+        </div>
+
+        <div class="form-actions mt-4" style="display:flex; justify-content:flex-end; gap:12px;">
+          <a href="{% url 'fee_list' %}" class="btn btn-secondary">Cancel</a>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check2-circle"></i> Save Fee Voucher
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

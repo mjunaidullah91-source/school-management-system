@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} | EduManage{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="form-container fade-in" style="max-width: 800px; margin: 0 auto;">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><i class="bi bi-person-badge-fill text-primary"></i> {{ title }}</div>
+      <a href="{% url 'staff_list' %}" class="btn btn-outline btn-sm"><i class="bi bi-arrow-left"></i> Back</a>
+    </div>
+    <div class="card-body">
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Employee ID</label>
+            {{ form.emp_id }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            {{ form.name }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Father / Spouse Name</label>
+            {{ form.father_or_spouse }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Designation / Role</label>
+            {{ form.designation }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Department</label>
+            {{ form.department }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Academic Qualification</label>
+            {{ form.qualification }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Gender</label>
+            {{ form.gender }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Blood Group</label>
+            {{ form.blood_group }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Date of Birth</label>
+            {{ form.dob }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Contact Phone</label>
+            {{ form.contact }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Emergency Phone</label>
+            {{ form.emergency_contact }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            {{ form.email }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">CNIC / National ID</label>
+            {{ form.cnic_or_nid }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Joining Date</label>
+            {{ form.joining_date }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Basic Monthly Salary (PKR)</label>
+            {{ form.basic_salary }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Staff Portrait Photo</label>
+            {{ form.photo }}
+          </div>
+          <div class="form-group" style="grid-column: span 2;">
+            <label class="form-label">Residential Address</label>
+            {{ form.address }}
+          </div>
+          <div class="form-group" style="grid-column: span 2;">
+            <div class="form-check">
+              {{ form.is_active }}
+              <label class="form-check-label font-weight-bold">Active Staff Member</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions mt-4" style="display:flex; justify-content:flex-end; gap:12px;">
+          <a href="{% url 'staff_list' %}" class="btn btn-secondary">Cancel</a>
+          <button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> Save Staff Profile</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

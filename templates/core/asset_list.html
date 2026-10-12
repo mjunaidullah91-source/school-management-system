@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Inventory & Assets | EduManage{% endblock %}
+{% block page_title %}School Assets & Inventory Tracking{% endblock %}
+
+{% block content %}
+<div class="row-2col">
+  <!-- Fixed Assets Register -->
+  <div class="card fade-in">
+    <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+      <div class="card-title"><i class="bi bi-box-seam-fill text-primary"></i> Fixed Assets Register</div>
+      <a href="{% url 'asset_add' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-circle"></i> Add Asset
+      </a>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Asset Name</th>
+              <th>Category</th>
+              <th>Location</th>
+              <th>Condition</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for a in assets %}
+              <tr>
+                <td><code>{{ a.asset_code }}</code></td>
+                <td><strong>{{ a.item_name }}</strong></td>
+                <td>{{ a.get_category_display }}</td>
+                <td>{{ a.location_room }}</td>
+                <td>
+                  <span class="badge badge-{% if a.condition == 'Good' %}success{% elif a.condition == 'Fair' %}info{% else %}danger{% endif %}">
+                    {{ a.condition }}
+                  </span>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="5" class="text-center py-4 text-muted">No assets registered.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Consumable Stock & Supplies -->
+  <div class="card fade-in">
+    <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+      <div class="card-title"><i class="bi bi-layers-fill text-teal"></i> Stationery & Stock Inventory</div>
+      <a href="{% url 'stock_add' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-circle"></i> Add Stock Item
+      </a>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th>Item Name</th>
+              <th>Category</th>
+              <th>In Stock</th>
+              <th>Unit Price</th>
+              <th>Stock Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in stocks %}
+              <tr>
+                <td><strong>{{ s.name }}</strong></td>
+                <td>{{ s.category }}</td>
+                <td><strong>{{ s.quantity }} {{ s.unit }}</strong></td>
+                <td>PKR {{ s.unit_price|floatformat:2 }}</td>
+                <td>
+                  {% if s.is_low_stock %}
+                    <span class="badge badge-danger"><i class="bi bi-exclamation-triangle"></i> Low Stock</span>
+                  {% else %}
+                    <span class="badge badge-success">In Stock</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="5" class="text-center py-4 text-muted">No stock items added.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

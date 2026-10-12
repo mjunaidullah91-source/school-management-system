@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="{{ school_setting.school_name|default:'Ittihad Model School' }} — Enterprise Portal">
+  <title>{% block title %}{{ school_setting.school_name|default:"Ittihad Model School" }}{% endblock %}</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<!-- Sidebar overlay (mobile) -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- ── SIDEBAR ───────────────────────────────────────────── -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon" style="display:flex; align-items:center; justify-content:center; background:none;">
+      {% if school_setting.logo %}
+        <img src="{{ school_setting.logo.url }}" alt="Logo" style="width:38px; height:38px; border-radius:50%; object-fit:contain; background:white; padding:1px; box-shadow:0 2px 6px rgba(0,0,0,0.15);">
+      {% else %}
+        <img src="{% static 'images/logo.png' %}" alt="Logo" style="width:38px; height:38px; border-radius:50%; object-fit:contain; background:white; padding:1px; box-shadow:0 2px 6px rgba(0,0,0,0.15);" onerror="this.outerHTML='🏫'">
+      {% endif %}
+    </div>
+    <div class="brand-text">
+      <h2 style="font-size:1.05rem; line-height:1.2;">{{ school_setting.school_name|default:"Ittihad Model School" }}</h2>
+      <span style="font-size:0.7rem; letter-spacing:0.3px;">{{ school_setting.tagline|default:"Excellence in Education" }}</span>
+    </div>
+  </div>
+
+  <nav class="sidebar-menu">
+    <div class="menu-label">Main Portals</div>
+    <div class="nav-item">
+      <a href="{% url 'dashboard' %}" class="nav-link">
+        <span class="nav-icon"><i class="bi bi-speedometer2"></i></span>
+        Dashboard
+      </a>
+    </div>
+    <div class="nav-item">
+      <a href="{% url 'teacher_portal' %}" class="nav-link">
+        <span class="nav-icon"><i class="bi bi-person-workspace"></i></span>
+        Teacher Portal
+      </a>
+    </div>
+    <div class="nav-item">
+      <a href="{% url 'student_portal' %}" class="nav-link">
+        <span class="nav-icon"><i class="bi bi-person-badge"></i></span>
+        Student Portal
+      </a>
+    </div>
+
+    <div class="menu-label">Students & Academics</div>
+    <div class="nav-item">
+      <a href="{% url 'student_list' %}" class="nav-link">
+        <span class="nav-icon"><i class="bi bi-people-fill"></i></span>
+        Students Directory
+      </a>
+    </div>
+    <div class="nav-item">
+      <a href="{% url 'student_id_cards_pdf' %}" target="_blank" class="nav-link">
+        <span class="nav-icon"><i class="bi bi-card-heading"></i></span>
+        Student ID Cards
+      </a>
+    </div>
+    <div class="nav-item">
+      <a href="{% url 'subject_list' %}" class="nav-link">
+        <span class="nav-icon"><i class="bi bi-book-half"></i></span>
+        Subjects
+      </a>
+    </div>
+    <div class="nav-item">
+      <a href="{% url 'timetable_list' %}" class="nav-link">
+        <span class="nav-icon"><i class="bi bi-calendar3"></i></span>
+        Class Timetable
+      </a>
+    </div>
+    <div class="nav-item">
+      <a href="{% url 'homework_list' %}" class="nav-link">
+        <span class="nav-icon"><i class="bi bi-journal-text"></i></span>
+        Daily Homework
+      </a>
+    </div>
+
+    <div class="menu-label">Finance & Fee Vouchers</div>
+    <div class="nav-item">
+      <a href="{% url 'fee_list' %}" class="nav-link">
+        <span class="nav-icon"><i class="bi bi-cash-stack"></i></span>
+        Fee Ledger
+      </a>
+    </div>
+    <div class="nav-item">
+      <a href="{% url 'bulk_voucher_generate' %}" class="nav-link">
+        <span class="nav-icon"><i class="bi bi-file-earmark-plus"></i></span>
+        Challan Builder
+      </a>
+    </div>
+
+    <div class="menu-label">Examinations & Merit</div>
+    <div class="nav-item">
+      <a href="{% url 'exam_list' %}" class="nav-link">
+        <span class="nav-icon"><i class="bi bi-award-fill"></i></span>
+        Exam Sessions
+      </a>
+    </div>
+    <div class="nav-item">
+      <a href="{% url 'result_list' %}" class="nav-link">
+        <span class="nav-icon"><i class="bi bi-bar-chart-fill"></i></span>
+        Results & Grades
+      </a>
+    </div>
+    <div class="nav-item">
+      <a href="{% url 'merit_list_view' %}" class="nav-link">
+        <span class="nav-icon"><i class="bi bi-trophy-fill"></i></span>
+        Positions & Merit
+      </a>
+    </div>
+
+    <div class="menu-label">Attendance & Leaves</div>
+    <div class="nav-item">
+      <a href="{% url 'student_attendance' %}" class="nav-link">
+        <span class="nav-icon"><i class="bi bi-check2-square"></i></span>
+        Student Attendance
+      </a>
+    </div>
+    <div class="nav-item">
+      <a href="{% url 'staff_attendance' %}" class="nav-link">
+        <span class="nav-icon"><i class="bi bi-person-check-fill"></i></span>
+        Staff Attendance
+      </a>
+    </div>
+    <div class="nav-item">
+      <a href="{% url 'leave_list' %}" class="nav-link">
+        <span class="nav-icon"><i class="bi bi-envelope-paper-fill"></i></span>
+        Leave Requests
+      </a>
+    </div>
+    <div class="nav-item">
+      <a href="{% url 'sms_logs' %}" class="nav-link">
+        <span class="nav-icon"><i class="bi bi-chat-dots-fill"></i></span>
+        SMS / WhatsApp Logs
+      </a>
+    </div>
+
+    <div class="menu-label">Staff & HR</div>
+    <div class="nav-item">
+      <a href="{% url 'staff_list' %}" class="nav-link">
+        <span class="nav-icon"><i class="bi bi-person-lines-fill"></i></span>
+        Staff Directory
+      </a>
+    </div>
+    <div class="nav-item">
+      <a href="{% url 'payroll_list' %}" class="nav-link">
+        <span class="nav-icon"><i class="bi bi-wallet2"></i></span>
+        Monthly Payroll
+      </a>
+    </div>
+
+    <div class="menu-label">Library & Assets</div>
+    <div class="nav-item">
+      <a href="{% url 'book_list' %}" class="nav-link">
+        <span class="nav-icon"><i class="bi bi-book-fill"></i></span>
+        Library Books
+      </a>
+    </div>
+    <div class="nav-item">
+      <a href="{% url 'book_issue_list' %}" class="nav-link">
+        <span class="nav-icon"><i class="bi bi-arrow-left-right"></i></span>
+        Book Issues / Returns
+      </a>
+    </div>
+    <div class="nav-item">
+      <a href="{% url 'asset_list' %}" class="nav-link">
+        <span class="nav-icon"><i class="bi bi-box-seam-fill"></i></span>
+        Assets & Inventory
+      </a>
+    </div>
+
+    <div class="menu-label">Certificates & Notices</div>
+    <div class="nav-item">
+      <a href="{% url 'certificate_list' %}" class="nav-link">
+        <span class="nav-icon"><i class="bi bi-file-earmark-medical-fill"></i></span>
+        Certificates (TC/Bonafide)
+      </a>
+    </div>
+    <div class="nav-item">
+      <a href="{% url 'notice_list' %}" class="nav-link">
+        <span class="nav-icon"><i class="bi bi-megaphone-fill"></i></span>
+        Notice Board
+      </a>
+    </div>
+
+    <div class="menu-label">Configuration</div>
+    <div class="nav-item">
+      <a href="{% url 'school_settings_view' %}" class="nav-link">
+        <span class="nav-icon"><i class="bi bi-sliders"></i></span>
+        School Branding
+      </a>
+    </div>
+    <div class="nav-item">
+      <a href="{% url 'notifications' %}" class="nav-link">
+        <span class="nav-icon"><i class="bi bi-bell-fill"></i></span>
+        Notifications
+        {% if unread_notifications %}
+          <span class="nav-badge">{{ unread_notifications }}</span>
+        {% endif %}
+      </a>
+    </div>
+    <div class="nav-item">
+      <a href="/admin/" class="nav-link" target="_blank">
+        <span class="nav-icon"><i class="bi bi-shield-lock-fill"></i></span>
+        Admin Panel
+      </a>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="user-avatar">{{ request.user.username|first|upper }}</div>
+      <div class="user-info">
+        <div class="name">{{ request.user.get_full_name|default:request.user.username }}</div>
+        <div class="role">{% if request.user.is_superuser %}System Admin{% elif request.user.staff_profile %}Teacher{% else %}Portal User{% endif %}</div>
+      </div>
+    </div>
+    <a href="{% url 'logout' %}" class="logout-btn" title="Logout">
+      <i class="bi bi-box-arrow-left"></i>
+    </a>
+  </div>
+</aside>
+
+<!-- ── TOPBAR ─────────────────────────────────────────────── -->
+<header class="topbar">
+  <div style="display:flex; align-items:center; gap:12px;">
+    <button class="btn-icon" id="menuToggle" aria-label="Toggle menu">
+      <i class="bi bi-list"></i>
+    </button>
+    <div class="topbar-title">{% block page_title %}EduManage Dashboard{% endblock %}</div>
+  </div>
+  <div class="topbar-actions">
+    <a href="{% url 'bulk_voucher_generate' %}" class="btn btn-outline btn-sm" title="Generate Monthly Vouchers">
+      <i class="bi bi-receipt"></i> <span class="d-none-sm">Challan Builder</span>
+    </a>
+    <a href="{% url 'student_attendance' %}" class="btn btn-outline btn-sm" title="Mark Daily Attendance">
+      <i class="bi bi-check-circle"></i> <span class="d-none-sm">Attendance</span>
+    </a>
+    <a href="{% url 'student_add' %}" class="btn btn-primary btn-sm" id="quickAddStudent">
+      <i class="bi bi-person-plus-fill"></i> <span class="d-none-sm">Admit Student</span>
+    </a>
+    <a href="{% url 'notifications' %}" class="btn-icon" id="notifBtn" title="Notifications">
+      <i class="bi bi-bell"></i>
+      {% if unread_notifications %}<span class="notif-dot"></span>{% endif %}
+    </a>
+  </div>
+</header>
+
+<!-- ── MAIN CONTENT ───────────────────────────────────────── -->
+<main class="main-content">
+  <div class="page-body">
+
+    <!-- Django Flash Messages -->
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} fade-in" role="alert">
+          <i class="bi bi-{% if message.tags == 'success' %}check-circle-fill{% elif message.tags == 'error' or message.tags == 'danger' %}exclamation-octagon-fill{% elif message.tags == 'warning' %}exclamation-triangle-fill{% else %}info-circle-fill{% endif %}"></i>
+          <div>{{ message }}</div>
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    {% block content %}{% endblock %}
+  </div>
+</main>
+
+<script src="{% static 'js/main.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Staff Payroll Register | EduManage{% endblock %}
+{% block page_title %}Staff HR & Monthly Payroll{% endblock %}
+
+{% block content %}
+<div class="stat-grid mb-4">
+  <div class="stat-card fade-in">
+    <div class="stat-icon icon-green">
+      <i class="bi bi-wallet2"></i>
+    </div>
+    <div class="stat-info">
+      <span class="stat-label">Total Monthly Payroll Disbursed</span>
+      <h3>PKR {{ total_net|floatformat:2 }}</h3>
+      <span class="stat-sub text-success">Net Payables</span>
+    </div>
+  </div>
+</div>
+
+<div class="card fade-in">
+  <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+    <div class="card-title"><i class="bi bi-cash-coin text-primary"></i> Monthly Staff Salary Register</div>
+    <div class="actions-group">
+      <a href="{% url 'export_payroll_excel' %}" class="btn btn-outline btn-sm">
+        <i class="bi bi-file-earmark-excel-fill text-success"></i> Export Excel
+      </a>
+      <a href="{% url 'payroll_generate' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-lightning-charge-fill"></i> Batch Generate Payroll
+      </a>
+    </div>
+  </div>
+
+  <!-- Filter Toolbar -->
+  <div class="filter-toolbar p-3" style="background:#F8FAFC; border-bottom:1px solid #E2E8F0;">
+    <form method="get" class="filter-form" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+      <select name="month" class="form-select form-select-sm" style="max-width:160px;">
+        <option value="">All Months</option>
+        {% for m, m_lbl in months %}
+          <option value="{{ m }}" {% if selected_month == m %}selected{% endif %}>{{ m_lbl }}</option>
+        {% endfor %}
+      </select>
+
+      <select name="year" class="form-select form-select-sm" style="max-width:120px;">
+        {% for y in years %}
+          <option value="{{ y }}" {% if selected_year == y %}selected{% endif %}>{{ y }}</option>
+        {% endfor %}
+      </select>
+
+      <button type="submit" class="btn btn-sm btn-secondary"><i class="bi bi-funnel"></i> Filter</button>
+      <a href="{% url 'payroll_list' %}" class="btn btn-sm btn-outline">Reset</a>
+    </form>
+  </div>
+
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th>Emp ID</th>
+            <th>Staff Name</th>
+            <th>Department</th>
+            <th>Month/Year</th>
+            <th>Basic</th>
+            <th>Allowance/Bonus</th>
+            <th>Deductions</th>
+            <th>Net Salary</th>
+            <th>Status</th>
+            <th>Salary Slip</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in payrolls %}
+            <tr>
+              <td><strong>{{ p.staff.emp_id }}</strong></td>
+              <td><strong>{{ p.staff.name }}</strong></td>
+              <td>{{ p.staff.department }}</td>
+              <td>{{ p.month }} {{ p.year }}</td>
+              <td>PKR {{ p.basic_salary|floatformat:2 }}</td>
+              <td class="text-success">+ PKR {{ p.allowance|add:p.bonus|floatformat:2 }}</td>
+              <td class="text-danger">- PKR {{ p.deductions|add:p.advance_deduction|floatformat:2 }}</td>
+              <td class="font-weight-bold" style="color:#0F766E;">PKR {{ p.net_salary|floatformat:2 }}</td>
+              <td>
+                <span class="badge badge-{% if p.status == 'Paid' %}success{% elif p.status == 'Generated' %}info{% else %}warning{% endif %}">
+                  {{ p.status }}
+                </span>
+              </td>
+              <td>
+                <a href="{% url 'payroll_slip_pdf' p.pk %}" target="_blank" class="btn btn-xs btn-outline">
+                  <i class="bi bi-printer-fill"></i> Pay Slip (PDF)
+                </a>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="10" class="text-center py-4 text-muted">No payroll entries generated for this period.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

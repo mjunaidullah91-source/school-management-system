@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Library Catalog | EduManage{% endblock %}
+{% block page_title %}Library Books & Resources Catalog{% endblock %}
+
+{% block content %}
+<div class="card fade-in">
+  <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+    <div class="card-title"><i class="bi bi-book-fill text-primary"></i> Library Book Catalog</div>
+    <div class="actions-group">
+      <a href="{% url 'book_issue_list' %}" class="btn btn-outline btn-sm">
+        <i class="bi bi-arrow-left-right text-teal"></i> Issued Books Ledger
+      </a>
+      <a href="{% url 'book_add' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-circle-fill"></i> Add New Book
+      </a>
+    </div>
+  </div>
+
+  <!-- Search Filter -->
+  <div class="filter-toolbar p-3" style="background:#F8FAFC; border-bottom:1px solid #E2E8F0;">
+    <form method="get" class="filter-form" style="display:flex; gap:12px; align-items:center;">
+      <input type="text" name="q" value="{{ search }}" class="form-control form-control-sm" placeholder="Search by title, author, ISBN..." style="max-width:300px;">
+      <button type="submit" class="btn btn-sm btn-secondary"><i class="bi bi-search"></i> Search</button>
+      <a href="{% url 'book_list' %}" class="btn btn-sm btn-outline">Reset</a>
+    </form>
+  </div>
+
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th>ISBN</th>
+            <th>Book Title</th>
+            <th>Author</th>
+            <th>Category</th>
+            <th>Rack #</th>
+            <th>Total Copies</th>
+            <th>Available</th>
+            <th>Issue</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for b in books %}
+            <tr>
+              <td><code>{{ b.isbn }}</code></td>
+              <td><strong>{{ b.title }}</strong></td>
+              <td>{{ b.author }}</td>
+              <td><span class="badge badge-info">{{ b.category }}</span></td>
+              <td>{{ b.rack_number }}</td>
+              <td>{{ b.total_copies }}</td>
+              <td>
+                <span class="badge badge-{% if b.available_copies > 0 %}success{% else %}danger{% endif %}">
+                  {{ b.available_copies }} available
+                </span>
+              </td>
+              <td>
+                {% if b.available_copies > 0 %}
+                  <a href="{% url 'book_issue_add' %}?book_id={{ b.pk }}" class="btn btn-xs btn-primary">
+                    <i class="bi bi-arrow-right-circle"></i> Issue
+                  </a>
+                {% else %}
+                  <span class="text-muted font-weight-bold" style="font-size:11px;">Out of Stock</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="8" class="text-center py-4 text-muted">No books found in the library catalog.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

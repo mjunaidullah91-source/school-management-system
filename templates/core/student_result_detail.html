@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Report Card | {{ student.name }}{% endblock %}
+{% block page_title %}Academic Report Card Dossier{% endblock %}
+
+{% block content %}
+<div class="card fade-in mb-4">
+  <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+    <div>
+      <div class="card-title"><i class="bi bi-award-fill text-warning"></i> Report Card: {{ student.name }} (Roll: {{ student.roll_no }})</div>
+      <small class="text-muted">Class {{ student.student_class }}-{{ student.section }} &bull; Session {{ year }}</small>
+    </div>
+    <div class="actions-group">
+      <a href="{% url 'result_pdf' student.pk %}?exam_type={{ exam_type }}&year={{ year }}" target="_blank" class="btn btn-primary btn-sm">
+        <i class="bi bi-printer-fill"></i> Download Official A4 Result Card (PDF)
+      </a>
+      <a href="{% url 'student_detail' student.pk %}" class="btn btn-outline btn-sm">
+        <i class="bi bi-arrow-left"></i> Student Profile
+      </a>
+    </div>
+  </div>
+
+  <!-- Academic Summary Metrics -->
+  <div class="card-body">
+    <div class="stat-grid mb-4">
+      <div class="stat-card">
+        <div class="stat-icon icon-blue"><i class="bi bi-calculator"></i></div>
+        <div class="stat-info">
+          <span class="stat-label">Total Marks</span>
+          <h3>{{ obtained_marks|floatformat:1 }} / {{ total_marks }}</h3>
+          <span class="stat-sub">Aggregate Score</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon icon-green"><i class="bi bi-percent"></i></div>
+        <div class="stat-info">
+          <span class="stat-label">Percentage</span>
+          <h3>{{ percentage }}%</h3>
+          <span class="stat-sub text-success">Overall Achievement</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon icon-teal"><i class="bi bi-bar-chart-steps"></i></div>
+        <div class="stat-info">
+          <span class="stat-label">Cumulative GPA</span>
+          <h3>{{ avg_gpa|floatformat:2 }}</h3>
+          <span class="stat-sub">Grade: <strong>{{ overall_grade }}</strong></span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon icon-amber"><i class="bi bi-trophy-fill"></i></div>
+        <div class="stat-info">
+          <span class="stat-label">Class Position</span>
+          <h3 class="text-warning">{{ position_text }}</h3>
+          <span class="stat-sub">Class Standing</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Subject Performance Table -->
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th>Subject</th>
+            <th>Max Marks</th>
+            <th>Obtained Marks</th>
+            <th>Percentage</th>
+            <th>Grade</th>
+            <th>GPA</th>
+            <th>Teacher Remarks</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in results %}
+            <tr>
+              <td><strong>{{ r.subject.name }}</strong> ({{ r.subject.code }})</td>
+              <td>{{ r.max_marks }}</td>
+              <td class="font-weight-bold">{{ r.marks_obtained }}</td>
+              <td>{{ r.percentage }}%</td>
+              <td><span class="badge badge-{% if r.grade == 'A+' or r.grade == 'A' %}success{% elif r.grade == 'F' %}danger{% else %}info{% endif %}">{{ r.grade }}</span></td>
+              <td>{{ r.gpa|floatformat:2 }}</td>
+              <td>{{ r.teacher_remarks|default:'Consistent progress' }}</td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="7" class="text-center py-4 text-muted">No examination scores recorded for this session.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

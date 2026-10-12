@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}Confirm Delete{% endblock %}
+{% block page_title %}Confirm Delete{% endblock %}
+
+{% block content %}
+<div class="confirm-wrapper fade-in">
+  <div class="card" style="border:2px solid #FEE2E2;">
+    <div class="card-body" style="text-align:center;padding:2.5rem;">
+      <div style="font-size:4rem;margin-bottom:1rem;">🗑️</div>
+      <h3 style="color:var(--danger);font-weight:700;margin-bottom:0.5rem;">Delete {{ type }}</h3>
+      <p style="color:var(--text-muted);margin-bottom:0.4rem;">
+        You are about to permanently delete:
+      </p>
+      <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:0.8rem 1.2rem;
+                  margin:1rem 0;font-weight:600;color:var(--danger);">
+        {{ object }}
+      </div>
+      <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:1.5rem;">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        This action <strong>cannot be undone</strong>. All related data will also be deleted.
+      </p>
+      <div style="display:flex;gap:0.8rem;justify-content:center;">
+        <a href="{% url cancel_url %}" class="btn btn-secondary btn-lg" id="cancelDeleteBtn">
+          <i class="bi bi-x-lg"></i> Cancel
+        </a>
+        <form method="post" style="display:inline;" id="deleteConfirmForm">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger btn-lg" id="confirmDeleteBtn">
+            <i class="bi bi-trash-fill"></i> Yes, Delete
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

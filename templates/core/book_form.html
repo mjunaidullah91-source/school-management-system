@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} | EduManage{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="form-container fade-in" style="max-width: 700px; margin: 0 auto;">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><i class="bi bi-book-fill text-primary"></i> {{ title }}</div>
+      <a href="{% url 'book_list' %}" class="btn btn-outline btn-sm"><i class="bi bi-arrow-left"></i> Back</a>
+    </div>
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-grid">
+          <div class="form-group" style="grid-column: span 2;">
+            <label class="form-label">Book Title</label>
+            {{ form.title }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Author Name</label>
+            {{ form.author }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">ISBN / Barcode</label>
+            {{ form.isbn }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Category / Genre</label>
+            {{ form.category }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Library Rack / Shelf #</label>
+            {{ form.rack_number }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Total Purchased Copies</label>
+            {{ form.total_copies }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Available In Stock Copies</label>
+            {{ form.available_copies }}
+          </div>
+        </div>
+
+        <div class="form-actions mt-4" style="display:flex; justify-content:flex-end; gap:12px;">
+          <a href="{% url 'book_list' %}" class="btn btn-secondary">Cancel</a>
+          <button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> Save Book</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

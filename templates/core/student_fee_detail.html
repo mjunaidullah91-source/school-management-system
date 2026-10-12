@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block title %}Fee History – {{ student.name }}{% endblock %}
+{% block page_title %}Fee History{% endblock %}
+
+{% block content %}
+<div class="page-header fade-in">
+  <div>
+    <h2>Fee History</h2>
+    <div class="breadcrumb">
+      <a href="{% url 'student_list' %}">Students</a> ›
+      <a href="{% url 'student_detail' student.pk %}">{{ student.name }}</a> › Fees
+    </div>
+  </div>
+  <div style="display:flex;gap:0.6rem;">
+    <a href="{% url 'fee_add' %}?student_id={{ student.pk }}" class="btn btn-success btn-sm" id="addStudentFeeBtn">
+      <i class="bi bi-plus-lg"></i> Add Fee
+    </a>
+    <a href="{% url 'student_detail' student.pk %}" class="btn btn-secondary btn-sm">
+      <i class="bi bi-arrow-left"></i> Back
+    </a>
+  </div>
+</div>
+
+<!-- Summary -->
+<div class="grid-2 mb-3 fade-in">
+  <div class="stat-card green" style="padding:1rem 1.2rem;">
+    <div class="stat-icon" style="width:42px;height:42px;font-size:1.2rem;">✅</div>
+    <div class="stat-info">
+      <div class="label">Total Paid</div>
+      <div class="value" style="font-size:1.4rem;">PKR {{ paid|floatformat:0 }}</div>
+    </div>
+  </div>
+  <div class="stat-card red" style="padding:1rem 1.2rem;">
+    <div class="stat-icon" style="width:42px;height:42px;font-size:1.2rem;">⏳</div>
+    <div class="stat-info">
+      <div class="label">Total Pending</div>
+      <div class="value" style="font-size:1.4rem;">PKR {{ due|floatformat:0 }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="card fade-in">
+  <div class="card-header">
+    <h5><i class="bi bi-cash-stack" style="color:var(--success);"></i> Fee Records for {{ student.name }}</h5>
+  </div>
+  <div class="card-body p-0">
+    {% if fees %}
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>Type</th><th>Month</th><th>Year</th>
+            <th>Amount</th><th>Paid</th><th>Balance</th><th>Status</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for fee in fees %}
+          <tr>
+            <td style="color:var(--text-muted);">{{ forloop.counter }}</td>
+            <td><span class="badge badge-secondary">{{ fee.fee_type }}</span></td>
+            <td>{{ fee.month|default:"—" }}</td>
+            <td>{{ fee.year }}</td>
+            <td class="fw-600">PKR {{ fee.amount }}</td>
+            <td style="color:var(--success);">PKR {{ fee.paid_amount }}</td>
+            <td style="color:{% if fee.balance > 0 %}var(--danger){% else %}var(--success){% endif %};font-weight:600;">
+              PKR {{ fee.balance }}
+            </td>
+            <td>
+              {% if fee.status == 'Paid' %}
+                <span class="badge badge-success">Paid</span>
+              {% elif fee.status == 'Partial' %}
+                <span class="badge badge-warning">Partial</span>
+              {% else %}
+                <span class="badge badge-danger">Unpaid</span>
+              {% endif %}
+            </td>
+            <td>
+              <a href="{% url 'fee_voucher_pdf' fee.pk %}" target="_blank" class="btn btn-outline btn-sm" title="Print Bank Challan">
+                <i class="bi bi-printer-fill"></i>
+              </a>
+              <a href="{% url 'fee_edit' fee.pk %}" class="btn btn-warning btn-sm">
+                <i class="bi bi-pencil-fill"></i>
+              </a>
+              <a href="{% url 'fee_delete' fee.pk %}" class="btn btn-danger btn-sm"
+                 data-confirm="Delete this fee record?">
+                <i class="bi bi-trash-fill"></i>
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state" style="padding:2.5rem;">
+      <div class="empty-icon">💳</div>
+      <h4>No Fee Records</h4>
+      <p>No fees have been added for {{ student.name }} yet.</p>
+      <a href="{% url 'fee_add' %}?student_id={{ student.pk }}" class="btn btn-success" style="margin-top:1rem;">
+        <i class="bi bi-plus-lg"></i> Add Fee
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

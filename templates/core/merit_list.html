@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Merit & Position List | EduManage{% endblock %}
+{% block page_title %}Academic Merit & Position Rankings{% endblock %}
+
+{% block content %}
+<div class="card fade-in">
+  <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+    <div class="card-title"><i class="bi bi-trophy-fill text-warning"></i> Class Position & Merit List</div>
+    <div class="actions-group">
+      <a href="?student_class={{ selected_class }}&exam_type={{ selected_exam }}&year={{ selected_year }}&export=excel" class="btn btn-outline btn-sm">
+        <i class="bi bi-file-earmark-excel-fill text-success"></i> Export Excel
+      </a>
+      <a href="{% url 'bulk_result_cards_pdf' %}?student_class={{ selected_class }}&exam_type={{ selected_exam }}&year={{ selected_year }}" target="_blank" class="btn btn-primary btn-sm">
+        <i class="bi bi-file-earmark-pdf-fill"></i> Bulk Class Result Cards (PDF)
+      </a>
+    </div>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="filter-toolbar p-3" style="background:#F8FAFC; border-bottom:1px solid #E2E8F0;">
+    <form method="get" class="filter-form" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+      <select name="student_class" class="form-select form-select-sm" style="max-width:160px;">
+        {% for c, c_lbl in classes %}
+          <option value="{{ c }}" {% if selected_class == c %}selected{% endif %}>{{ c_lbl }}</option>
+        {% endfor %}
+      </select>
+
+      <select name="exam_type" class="form-select form-select-sm" style="max-width:180px;">
+        {% for e, e_lbl in exams %}
+          <option value="{{ e }}" {% if selected_exam == e %}selected{% endif %}>{{ e_lbl }}</option>
+        {% endfor %}
+      </select>
+
+      <select name="year" class="form-select form-select-sm" style="max-width:120px;">
+        {% for y in years %}
+          <option value="{{ y }}" {% if selected_year == y %}selected{% endif %}>{{ y }}</option>
+        {% endfor %}
+      </select>
+
+      <button type="submit" class="btn btn-sm btn-secondary"><i class="bi bi-search"></i> Compute Merit</button>
+    </form>
+  </div>
+
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Roll No</th>
+            <th>Student Name</th>
+            <th>Section</th>
+            <th>Max Marks</th>
+            <th>Obtained</th>
+            <th>Percentage</th>
+            <th>Grade</th>
+            <th>CGPA</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in merit_data %}
+            <tr {% if forloop.counter == 1 %}style="background:#FEF9C3;"{% elif forloop.counter == 2 %}style="background:#F1F5F9;"{% elif forloop.counter == 3 %}style="background:#FFF7ED;"{% endif %}>
+              <td>
+                {% if forloop.counter == 1 %}
+                  <span class="badge badge-warning"><i class="bi bi-trophy-fill"></i> 1st Position</span>
+                {% elif forloop.counter == 2 %}
+                  <span class="badge badge-secondary"><i class="bi bi-award-fill"></i> 2nd Position</span>
+                {% elif forloop.counter == 3 %}
+                  <span class="badge badge-warning" style="background:#FDBA74; color:#7C2D12;"><i class="bi bi-award"></i> 3rd Position</span>
+                {% else %}
+                  <strong>{{ item.position_text }}</strong>
+                {% endif %}
+              </td>
+              <td><strong>{{ item.student.roll_no }}</strong></td>
+              <td>
+                <a href="{% url 'student_detail' item.student.pk %}" class="text-dark font-weight-bold">
+                  {{ item.student.name }}
+                </a>
+              </td>
+              <td>{{ item.student.section }}</td>
+              <td>{{ item.total_max }}</td>
+              <td class="font-weight-bold">{{ item.total_obtained|floatformat:1 }}</td>
+              <td><strong>{{ item.percentage }}%</strong></td>
+              <td><span class="badge badge-{% if item.grade == 'A+' or item.grade == 'A' %}success{% elif item.grade == 'F' %}danger{% else %}info{% endif %}">{{ item.grade }}</span></td>
+              <td>{{ item.cgpa|floatformat:2 }}</td>
+              <td>
+                <a href="{% url 'result_pdf' item.student.pk %}?exam_type={{ selected_exam }}&year={{ selected_year }}" target="_blank" class="btn btn-xs btn-outline" title="Print Result Card">
+                  <i class="bi bi-printer"></i> Card
+                </a>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="10" class="text-center py-4 text-muted">No examination scores found for this class and exam session.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Generate Monthly Payroll | EduManage{% endblock %}
+{% block page_title %}Batch Monthly Payroll Generator{% endblock %}
+
+{% block content %}
+<div class="form-container fade-in" style="max-width: 600px; margin: 0 auto;">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><i class="bi bi-wallet2 text-primary"></i> Batch Generate Staff Payroll</div>
+      <a href="{% url 'payroll_list' %}" class="btn btn-outline btn-sm"><i class="bi bi-arrow-left"></i> Back</a>
+    </div>
+    <div class="card-body">
+      <p class="text-muted mb-4">
+        Select the target month and year to automatically compile monthly salary records for all active staff members based on their designated base pay scale.
+      </p>
+
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-group mb-3">
+          <label class="form-label">Billing Month</label>
+          <select name="month" class="form-select" required>
+            {% for m, m_lbl in months %}
+              <option value="{{ m }}">{{ m_lbl }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group mb-4">
+          <label class="form-label">Academic Year</label>
+          <input type="number" name="year" value="{{ current_year }}" class="form-control" required>
+        </div>
+
+        <div class="form-actions" style="display:flex; justify-content:flex-end; gap:12px;">
+          <a href="{% url 'payroll_list' %}" class="btn btn-secondary">Cancel</a>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-lightning-charge-fill"></i> Generate Salaries Now
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

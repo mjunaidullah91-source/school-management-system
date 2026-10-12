@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}Student Attendance | EduManage{% endblock %}
+{% block page_title %}Daily Student Attendance Tracker{% endblock %}
+
+{% block content %}
+<div class="card fade-in">
+  <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+    <div class="card-title"><i class="bi bi-check2-square text-primary"></i> Daily Class Attendance Matrix</div>
+    <a href="{% url 'sms_logs' %}" class="btn btn-outline btn-sm">
+      <i class="bi bi-chat-dots"></i> SMS Alert Dispatch Log
+    </a>
+  </div>
+
+  <!-- Class & Date Selection Bar -->
+  <div class="filter-toolbar p-3" style="background:#F8FAFC; border-bottom:1px solid #E2E8F0;">
+    <form method="get" class="filter-form" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+      <select name="student_class" class="form-select form-select-sm" style="max-width:160px;">
+        {% for c, c_lbl in classes %}
+          <option value="{{ c }}" {% if selected_class == c %}selected{% endif %}>{{ c_lbl }}</option>
+        {% endfor %}
+      </select>
+
+      <select name="section" class="form-select form-select-sm" style="max-width:140px;">
+        {% for s, s_lbl in sections %}
+          <option value="{{ s }}" {% if selected_section == s %}selected{% endif %}>{{ s_lbl }}</option>
+        {% endfor %}
+      </select>
+
+      <input type="date" name="date" value="{{ selected_date }}" class="form-control form-control-sm" style="max-width:160px;">
+
+      <button type="submit" class="btn btn-sm btn-secondary"><i class="bi bi-arrow-repeat"></i> Load Class</button>
+    </form>
+  </div>
+
+  <div class="card-body p-0">
+    <form method="post">
+      {% csrf_token %}
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th>Roll No</th>
+              <th>Student Name</th>
+              <th>Father Name</th>
+              <th>Attendance Status</th>
+              <th>Remarks</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in students %}
+              <tr>
+                <td><strong>{{ s.roll_no }}</strong></td>
+                <td>
+                  <a href="{% url 'student_detail' s.pk %}" class="text-dark font-weight-bold">
+                    {{ s.name }}
+                  </a>
+                </td>
+                <td>{{ s.father_name }}</td>
+                <td>
+                  {% with rec=existing|dict_get:s.pk %}
+                    <div style="display:flex; gap:12px; align-items:center;">
+                      <label style="cursor:pointer; display:flex; align-items:center; gap:4px;">
+                        <input type="radio" name="status_{{ s.pk }}" value="Present" {% if not rec or rec.status == 'Present' %}checked{% endif %}>
+                        <span class="badge badge-success">Present</span>
+                      </label>
+                      <label style="cursor:pointer; display:flex; align-items:center; gap:4px;">
+                        <input type="radio" name="status_{{ s.pk }}" value="Absent" {% if rec and rec.status == 'Absent' %}checked{% endif %}>
+                        <span class="badge badge-danger">Absent (SMS)</span>
+                      </label>
+                      <label style="cursor:pointer; display:flex; align-items:center; gap:4px;">
+                        <input type="radio" name="status_{{ s.pk }}" value="Late" {% if rec and rec.status == 'Late' %}checked{% endif %}>
+                        <span class="badge badge-warning">Late</span>
+                      </label>
+                      <label style="cursor:pointer; display:flex; align-items:center; gap:4px;">
+                        <input type="radio" name="status_{{ s.pk }}" value="Leave" {% if rec and rec.status == 'Leave' %}checked{% endif %}>
+                        <span class="badge badge-info">Leave</span>
+                      </label>
+                    </div>
+                  {% endwith %}
+                </td>
+                <td>
+                  {% with rec=existing|dict_get:s.pk %}
+                    <input type="text" name="remarks_{{ s.pk }}" value="{{ rec.remarks|default:'' }}" class="form-control form-control-sm" placeholder="Optional notes" style="max-width:200px;">
+                  {% endwith %}
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="5" class="text-center py-4 text-muted">No students enrolled in Class {{ selected_class }} (Section {{ selected_section }}).</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% if students %}
+        <div class="p-3" style="background:#F8FAFC; border-top:1px solid #E2E8F0; display:flex; justify-content:space-between; align-items:center;">
+          <small class="text-muted"><i class="bi bi-info-circle"></i> Marking a student <strong>Absent</strong> will automatically log an automated SMS alert for parent notification.</small>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-cloud-arrow-up-fill"></i> Save & Dispatch Absence Alerts
+          </button>
+        </div>
+      {% endif %}
+    </form>
+  </div>
+</div>
+{% endblock %}

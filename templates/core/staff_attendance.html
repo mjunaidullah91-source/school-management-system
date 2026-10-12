@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}Staff Attendance | EduManage{% endblock %}
+{% block page_title %}Staff & Faculty Attendance Tracker{% endblock %}
+
+{% block content %}
+<div class="card fade-in">
+  <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+    <div class="card-title"><i class="bi bi-person-check-fill text-primary"></i> Daily Staff Attendance</div>
+    <form method="get" class="filter-form" style="display:flex; gap:10px; align-items:center;">
+      <input type="date" name="date" value="{{ selected_date }}" class="form-control form-control-sm" style="max-width:160px;">
+      <button type="submit" class="btn btn-sm btn-secondary"><i class="bi bi-calendar3"></i> Load Date</button>
+    </form>
+  </div>
+
+  <div class="card-body p-0">
+    <form method="post">
+      {% csrf_token %}
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th>Emp ID</th>
+              <th>Name</th>
+              <th>Department</th>
+              <th>Designation</th>
+              <th>Status</th>
+              <th>Remarks</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for sm in staff_members %}
+              <tr>
+                <td><strong>{{ sm.emp_id }}</strong></td>
+                <td><strong>{{ sm.name }}</strong></td>
+                <td>{{ sm.department }}</td>
+                <td>{{ sm.designation }}</td>
+                <td>
+                  {% with rec=existing|dict_get:sm.pk %}
+                    <div style="display:flex; gap:10px; align-items:center;">
+                      <label style="cursor:pointer;"><input type="radio" name="status_{{ sm.pk }}" value="Present" {% if not rec or rec.status == 'Present' %}checked{% endif %}> <span class="badge badge-success">Present</span></label>
+                      <label style="cursor:pointer;"><input type="radio" name="status_{{ sm.pk }}" value="Absent" {% if rec and rec.status == 'Absent' %}checked{% endif %}> <span class="badge badge-danger">Absent</span></label>
+                      <label style="cursor:pointer;"><input type="radio" name="status_{{ sm.pk }}" value="Late" {% if rec and rec.status == 'Late' %}checked{% endif %}> <span class="badge badge-warning">Late</span></label>
+                      <label style="cursor:pointer;"><input type="radio" name="status_{{ sm.pk }}" value="Leave" {% if rec and rec.status == 'Leave' %}checked{% endif %}> <span class="badge badge-info">Leave</span></label>
+                    </div>
+                  {% endwith %}
+                </td>
+                <td>
+                  {% with rec=existing|dict_get:sm.pk %}
+                    <input type="text" name="remarks_{{ sm.pk }}" value="{{ rec.remarks|default:'' }}" class="form-control form-control-sm" placeholder="Notes">
+                  {% endwith %}
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="6" class="text-center py-4 text-muted">No staff records found.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% if staff_members %}
+        <div class="p-3" style="background:#F8FAFC; border-top:1px solid #E2E8F0; text-align:right;">
+          <button type="submit" class="btn btn-primary"><i class="bi bi-check2-circle"></i> Save Staff Attendance</button>
+        </div>
+      {% endif %}
+    </form>
+  </div>
+</div>
+{% endblock %}

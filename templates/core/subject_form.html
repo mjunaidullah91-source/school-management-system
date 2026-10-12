@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} – Subject{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="page-header fade-in">
+  <div>
+    <h2>{{ title }}</h2>
+    <div class="breadcrumb"><a href="{% url 'subject_list' %}">Subjects</a> › {{ title }}</div>
+  </div>
+  <a href="{% url 'subject_list' %}" class="btn btn-secondary btn-sm">
+    <i class="bi bi-arrow-left"></i> Back
+  </a>
+</div>
+
+<div class="card fade-in" style="max-width:500px;margin:0 auto;">
+  <div class="card-header">
+    <h5><i class="bi bi-book-fill" style="color:var(--primary-light);"></i> Subject Info</h5>
+  </div>
+  <div class="card-body">
+    <form method="post" id="subjectForm">
+      {% csrf_token %}
+      <div style="margin-bottom:1rem;">
+        <label class="form-label">Subject Name *</label>
+        {{ form.name }}
+      </div>
+      <div style="margin-bottom:1rem;">
+        <label class="form-label">Subject Code *</label>
+        {{ form.code }}
+        <div class="form-text">Unique short code, e.g. MATH, ENG, SCI</div>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <label class="form-label">Max Marks</label>
+        {{ form.max_marks }}
+      </div>
+      <div style="margin-bottom:1.5rem;">
+        <label class="form-label">For Class (optional)</label>
+        {{ form.student_class }}
+        <div class="form-text">Leave blank if subject applies to all classes</div>
+      </div>
+
+      {% if form.errors %}
+        <div class="alert alert-danger">
+          <i class="bi bi-exclamation-circle-fill"></i>
+          {% for field, errors in form.errors.items %}
+            {% for error in errors %}<br>• <strong>{{ field }}</strong>: {{ error }}{% endfor %}
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <div style="display:flex;gap:0.8rem;justify-content:flex-end;">
+        <a href="{% url 'subject_list' %}" class="btn btn-secondary" id="cancelSubjectBtn">Cancel</a>
+        <button type="submit" class="btn btn-primary" id="submitSubjectBtn">
+          <i class="bi bi-check-lg"></i> {{ action }} Subject
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

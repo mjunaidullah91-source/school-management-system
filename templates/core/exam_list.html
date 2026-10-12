@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Examination Sessions | EduManage{% endblock %}
+{% block page_title %}Examinations & Timetables{% endblock %}
+
+{% block content %}
+<div class="card fade-in">
+  <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+    <div class="card-title"><i class="bi bi-award-fill text-primary"></i> Examination Sessions</div>
+    <a href="{% url 'exam_add' %}" class="btn btn-primary btn-sm">
+      <i class="bi bi-plus-circle-fill"></i> New Exam Session
+    </a>
+  </div>
+
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th>Exam Title</th>
+            <th>Type</th>
+            <th>Academic Year</th>
+            <th>Schedule</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for exam in exams %}
+            <tr>
+              <td><strong>{{ exam.title }}</strong></td>
+              <td><span class="badge badge-info">{{ exam.get_exam_type_display }}</span></td>
+              <td>{{ exam.academic_year }}</td>
+              <td>{{ exam.start_date }} to {{ exam.end_date }}</td>
+              <td>
+                {% if exam.is_active %}
+                  <span class="badge badge-success">Active</span>
+                {% else %}
+                  <span class="badge badge-secondary">Concluded</span>
+                {% endif %}
+              </td>
+              <td>
+                <div class="btn-group">
+                  <a href="{% url 'exam_schedule_list' exam.pk %}" class="btn btn-xs btn-outline" title="Exam Timetable & Admit Cards">
+                    <i class="bi bi-calendar3"></i> Timetable
+                  </a>
+                  <a href="{% url 'exam_edit' exam.pk %}" class="btn btn-xs btn-outline" title="Edit">
+                    <i class="bi bi-pencil-fill"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="6" class="text-center py-4 text-muted">No examination sessions created.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

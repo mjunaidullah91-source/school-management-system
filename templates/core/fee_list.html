@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block title %}Fee Ledger & Vouchers | EduManage{% endblock %}
+{% block page_title %}Fee Management & Banking Challans{% endblock %}
+
+{% block content %}
+<!-- Top Action & Financial Metrics -->
+<div class="stat-grid mb-4">
+  <div class="stat-card fade-in">
+    <div class="stat-icon icon-green">
+      <i class="bi bi-wallet-fill"></i>
+    </div>
+    <div class="stat-info">
+      <span class="stat-label">Total Realized Collection</span>
+      <h3>PKR {{ total_collected|floatformat:2 }}</h3>
+      <span class="stat-sub text-success">Cleared Payments</span>
+    </div>
+  </div>
+
+  <div class="stat-card fade-in">
+    <div class="stat-icon icon-amber">
+      <i class="bi bi-hourglass-split"></i>
+    </div>
+    <div class="stat-info">
+      <span class="stat-label">Total Outstanding Dues</span>
+      <h3 class="text-danger">PKR {{ total_pending|floatformat:2 }}</h3>
+      <span class="stat-sub text-danger">Unpaid / Partial</span>
+    </div>
+  </div>
+</div>
+
+<div class="table-card card fade-in">
+  <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+    <div class="card-title"><i class="bi bi-cash-stack text-primary"></i> Fee Vouchers Ledger</div>
+    <div class="actions-group" style="display:flex; gap:8px; flex-wrap:wrap;">
+      <a href="{% url 'bulk_voucher_generate' %}" class="btn btn-outline btn-sm">
+        <i class="bi bi-lightning-charge-fill text-warning"></i> Bulk Challan Builder
+      </a>
+      <a href="{% url 'export_fees_excel' %}" class="btn btn-outline btn-sm">
+        <i class="bi bi-file-earmark-excel-fill text-success"></i> Export Excel
+      </a>
+      <a href="{% url 'fee_add' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-circle-fill"></i> Create Single Voucher
+      </a>
+    </div>
+  </div>
+
+  <!-- Filters Toolbar -->
+  <div class="filter-toolbar p-3" style="background:#F8FAFC; border-bottom:1px solid #E2E8F0;">
+    <form method="get" class="filter-form" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+      <input type="text" name="q" value="{{ search }}" class="form-control form-control-sm" placeholder="Search by student, roll no, voucher #" style="max-width:240px;">
+      
+      <select name="status" class="form-select form-select-sm" style="max-width:140px;">
+        <option value="">All Statuses</option>
+        <option value="Paid" {% if status_filter == 'Paid' %}selected{% endif %}>Paid</option>
+        <option value="Unpaid" {% if status_filter == 'Unpaid' %}selected{% endif %}>Unpaid</option>
+        <option value="Partial" {% if status_filter == 'Partial' %}selected{% endif %}>Partial</option>
+        <option value="Overdue" {% if status_filter == 'Overdue' %}selected{% endif %}>Overdue</option>
+      </select>
+
+      <select name="month" class="form-select form-select-sm" style="max-width:140px;">
+        <option value="">All Months</option>
+        {% for m, m_lbl in months %}
+          <option value="{{ m }}" {% if month_filter == m %}selected{% endif %}>{{ m_lbl }}</option>
+        {% endfor %}
+      </select>
+
+      <select name="year" class="form-select form-select-sm" style="max-width:120px;">
+        <option value="">All Years</option>
+        {% for y in years %}
+          <option value="{{ y }}" {% if year_filter == y|stringformat:"i" %}selected{% endif %}>{{ y }}</option>
+        {% endfor %}
+      </select>
+
+      <button type="submit" class="btn btn-sm btn-secondary"><i class="bi bi-funnel"></i> Filter</button>
+      <a href="{% url 'fee_list' %}" class="btn btn-sm btn-outline"><i class="bi bi-arrow-clockwise"></i> Reset</a>
+    </form>
+  </div>
+
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th>Voucher #</th>
+            <th>Student</th>
+            <th>Class</th>
+            <th>Month / Year</th>
+            <th>Payable</th>
+            <th>Paid</th>
+            <th>Balance</th>
+            <th>Status</th>
+            <th>Due Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for fee in fees %}
+            <tr>
+              <td><strong>{{ fee.voucher_no }}</strong></td>
+              <td>
+                <a href="{% url 'student_detail' fee.student.pk %}" class="font-weight-bold text-dark">
+                  {{ fee.student.name }}
+                </a>
+                <div class="text-muted" style="font-size:11px;">Roll: {{ fee.student.roll_no }}</div>
+              </td>
+              <td>Class {{ fee.student.student_class }}-{{ fee.student.section }}</td>
+              <td>{{ fee.month }} {{ fee.year }}</td>
+              <td>PKR {{ fee.amount|floatformat:2 }}</td>
+              <td class="text-success font-weight-bold">PKR {{ fee.paid_amount|floatformat:2 }}</td>
+              <td class="{% if fee.balance > 0 %}text-danger{% else %}text-muted{% endif %} font-weight-bold">
+                PKR {{ fee.balance|floatformat:2 }}
+              </td>
+              <td>
+                <span class="badge badge-{% if fee.status == 'Paid' %}success{% elif fee.status == 'Partial' %}warning{% elif fee.status == 'Overdue' %}danger{% else %}secondary{% endif %}">
+                  {{ fee.status }}
+                </span>
+              </td>
+              <td>{{ fee.due_date|default:'—' }}</td>
+              <td>
+                <div class="btn-group">
+                  <a href="{% url 'fee_voucher_pdf' fee.pk %}" target="_blank" class="btn btn-xs btn-primary" title="Print 3-Part Bank Challan">
+                    <i class="bi bi-printer-fill"></i> Challan
+                  </a>
+                  {% if fee.balance > 0 %}
+                    <a href="{% url 'fee_reminder_sms' fee.pk %}" class="btn btn-xs btn-outline" title="Send SMS Reminder">
+                      <i class="bi bi-chat-dots-fill"></i>
+                    </a>
+                  {% endif %}
+                  <a href="{% url 'fee_edit' fee.pk %}" class="btn btn-xs btn-outline" title="Record Payment / Edit">
+                    <i class="bi bi-pencil-fill"></i>
+                  </a>
+                  <a href="{% url 'fee_delete' fee.pk %}" class="btn btn-xs btn-danger" title="Delete">
+                    <i class="bi bi-trash-fill"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="10" class="text-center py-4 text-muted">No fee records found.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

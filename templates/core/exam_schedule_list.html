@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Exam Timetable | {{ exam.title }}{% endblock %}
+{% block page_title %}{{ exam.title }} — Timetable & Admit Cards{% endblock %}
+
+{% block content %}
+<div class="card fade-in">
+  <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+    <div>
+      <div class="card-title"><i class="bi bi-calendar-range-fill text-primary"></i> Exam Timetable: {{ exam.title }}</div>
+      <small class="text-muted">{{ exam.start_date }} to {{ exam.end_date }} (Year {{ exam.academic_year }})</small>
+    </div>
+    <div class="actions-group">
+      <a href="{% url 'exam_schedule_add' exam.pk %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-circle-fill"></i> Add Timetable Slot
+      </a>
+      <a href="{% url 'exam_list' %}" class="btn btn-outline btn-sm">
+        <i class="bi bi-arrow-left"></i> Back to Exams
+      </a>
+    </div>
+  </div>
+
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th>Class</th>
+            <th>Subject</th>
+            <th>Exam Date</th>
+            <th>Timing</th>
+            <th>Room / Hall</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in schedules %}
+            <tr>
+              <td><strong>Class {{ s.student_class }}</strong></td>
+              <td><strong>{{ s.subject.name }}</strong> ({{ s.subject.code }})</td>
+              <td>{{ s.exam_date|date:"D, d M Y" }}</td>
+              <td>{{ s.start_time|time:"g:i A" }} - {{ s.end_time|time:"g:i A" }}</td>
+              <td><span class="badge badge-info">{{ s.room_no }}</span></td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="5" class="text-center py-4 text-muted">No timetable slots created for this exam yet.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

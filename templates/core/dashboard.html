@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | {{ school_setting.school_name }}{% endblock %}
+{% block page_title %}Enterprise Overview Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-header mb-4">
+  <div class="welcome-box">
+    <h2>Welcome, {{ request.user.get_full_name|default:request.user.username }}! 👋</h2>
+    <p class="text-muted">{{ school_setting.school_name }} &bull; Academic Session {{ current_year }}</p>
+  </div>
+  <div class="quick-actions-bar">
+    <a href="{% url 'bulk_voucher_generate' %}" class="btn btn-outline btn-sm">
+      <i class="bi bi-file-earmark-plus"></i> Bulk Challans
+    </a>
+    <a href="{% url 'student_attendance' %}" class="btn btn-outline btn-sm">
+      <i class="bi bi-calendar-check"></i> Mark Attendance
+    </a>
+    <a href="{% url 'student_add' %}" class="btn btn-primary btn-sm">
+      <i class="bi bi-person-plus-fill"></i> New Admission
+    </a>
+  </div>
+</div>
+
+<!-- ── KPI STATS CARDS ────────────────────────────────────── -->
+<div class="stat-grid mb-4">
+  <div class="stat-card fade-in">
+    <div class="stat-icon icon-blue">
+      <i class="bi bi-people-fill"></i>
+    </div>
+    <div class="stat-info">
+      <span class="stat-label">Active Students</span>
+      <h3 class="stat-value-anim" data-target="{{ total_students }}">{{ total_students }}</h3>
+      <span class="stat-sub text-success"><i class="bi bi-arrow-up-right"></i> Enrolled & Active</span>
+    </div>
+  </div>
+
+  <div class="stat-card fade-in">
+    <div class="stat-icon icon-teal">
+      <i class="bi bi-person-badge-fill"></i>
+    </div>
+    <div class="stat-info">
+      <span class="stat-label">Faculty & Staff</span>
+      <h3 class="stat-value-anim" data-target="{{ total_staff }}">{{ total_staff }}</h3>
+      <span class="stat-sub text-muted">Teaching & Admin</span>
+    </div>
+  </div>
+
+  <div class="stat-card fade-in">
+    <div class="stat-icon icon-green">
+      <i class="bi bi-cash-coin"></i>
+    </div>
+    <div class="stat-info">
+      <span class="stat-label">Fees Collected</span>
+      <h3 class="stat-value-anim" data-target="{{ total_fees_collected }}" data-prefix="{{ school_setting.currency_symbol }} ">{{ school_setting.currency_symbol }} {{ total_fees_collected|floatformat:2 }}</h3>
+      <span class="stat-sub text-success">Total Cleared</span>
+    </div>
+  </div>
+
+  <div class="stat-card fade-in">
+    <div class="stat-icon icon-amber">
+      <i class="bi bi-clock-history"></i>
+    </div>
+    <div class="stat-info">
+      <span class="stat-label">Pending Dues</span>
+      <h3 class="stat-value-anim" data-target="{{ pending_fees }}" data-prefix="{{ school_setting.currency_symbol }} ">{{ school_setting.currency_symbol }} {{ pending_fees|floatformat:2 }}</h3>
+      <span class="stat-sub text-danger">{{ pending_fees_count }} Vouchers Due</span>
+    </div>
+  </div>
+
+  <div class="stat-card fade-in">
+    <div class="stat-icon icon-purple">
+      <i class="bi bi-pie-chart-fill"></i>
+    </div>
+    <div class="stat-info">
+      <span class="stat-label">Today's Attendance</span>
+      <h3>{{ attendance_rate }}%</h3>
+      <span class="stat-sub text-danger">{{ today_absent }} Students Absent</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── CHARTS SECTION ────────────────────────────────────── -->
+<div class="chart-grid mb-4">
+  <div class="card fade-in">
+    <div class="card-header">
+      <div class="card-title"><i class="bi bi-bar-chart-line-fill text-primary"></i> Monthly Revenue Collection ({{ current_year }})</div>
+      <a href="{% url 'fee_list' %}" class="btn-link">View Ledger <i class="bi bi-chevron-right"></i></a>
+    </div>
+    <div class="card-body">
+      <div class="chart-container" style="height: 270px;">
+        <canvas id="feeChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="card fade-in">
+    <div class="card-header">
+      <div class="card-title"><i class="bi bi-pie-chart-fill text-teal"></i> Class-wise Enrollment</div>
+      <a href="{% url 'student_list' %}" class="btn-link">All Classes <i class="bi bi-chevron-right"></i></a>
+    </div>
+    <div class="card-body">
+      <div class="chart-container" style="height: 270px;">
+        <canvas id="classChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── OVERDUE FEES & RECENT NOTICES ─────────────────────── -->
+<div class="dashboard-bottom-grid">
+  <!-- Overdue Fees -->
+  <div class="card fade-in">
+    <div class="card-header">
+      <div class="card-title"><i class="bi bi-exclamation-triangle-fill text-danger"></i> Urgent Overdue Fees</div>
+      <a href="{% url 'fee_list' %}?status=Overdue" class="btn-link">View All</a>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th>Voucher</th>
+              <th>Student</th>
+              <th>Class</th>
+              <th>Balance</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for fee in overdue_fees %}
+              <tr>
+                <td><strong>{{ fee.voucher_no }}</strong></td>
+                <td>
+                  <a href="{% url 'student_detail' fee.student.pk %}" class="text-dark font-weight-bold">
+                    {{ fee.student.name }}
+                  </a>
+                </td>
+                <td>Class {{ fee.student.student_class }}-{{ fee.student.section }}</td>
+                <td class="text-danger font-weight-bold">{{ school_setting.currency_symbol }} {{ fee.balance|floatformat:2 }}</td>
+                <td>
+                  <a href="{% url 'fee_reminder_sms' fee.pk %}" class="btn btn-xs btn-outline" title="Send SMS Reminder">
+                    <i class="bi bi-chat-dots-fill"></i> SMS
+                  </a>
+                  <a href="{% url 'fee_voucher_pdf' fee.pk %}" target="_blank" class="btn btn-xs btn-primary" title="Print Challan">
+                    <i class="bi bi-printer"></i>
+                  </a>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="5" class="text-center py-4 text-muted">
+                  <i class="bi bi-check-circle-fill text-success" style="font-size:24px;"></i>
+                  <p class="mb-0 mt-1">No overdue fees currently. Great job!</p>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Digital Notice Board & Recent Admissions -->
+  <div class="card fade-in">
+    <div class="card-header">
+      <div class="card-title"><i class="bi bi-megaphone-fill text-warning"></i> Digital Notice Board</div>
+      <a href="{% url 'notice_list' %}" class="btn-link">All Notices</a>
+    </div>
+    <div class="card-body">
+      <div class="notice-feed">
+        {% for notice in latest_notices %}
+          <div class="notice-item {% if notice.is_pinned %}pinned{% endif %}">
+            <div class="notice-badge badge-{{ notice.category|lower }}">{{ notice.category }}</div>
+            <div class="notice-content">
+              <h4>{{ notice.title }}</h4>
+              <p>{{ notice.content|truncatechars:100 }}</p>
+              <span class="notice-date"><i class="bi bi-calendar3"></i> {{ notice.publish_date }} &bull; For {{ notice.get_target_audience_display }}</span>
+            </div>
+          </div>
+        {% empty %}
+          <p class="text-muted text-center py-3">No notices posted recently.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const classData = {{ class_data|safe }};
+    const monthlyFees = {{ monthly_fees|safe }};
+    const monthsLabels = {{ months_labels|safe }};
+    initDashboardCharts(classData, monthlyFees, monthsLabels);
+  });
+</script>
+{% endblock %}

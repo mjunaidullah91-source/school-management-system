@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Leave Applications | EduManage{% endblock %}
+{% block page_title %}Student & Staff Leave Requests{% endblock %}
+
+{% block content %}
+<div class="card fade-in">
+  <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+    <div class="card-title"><i class="bi bi-envelope-paper-fill text-primary"></i> Leave Applications</div>
+    <a href="{% url 'leave_apply' %}" class="btn btn-primary btn-sm">
+      <i class="bi bi-plus-circle-fill"></i> Submit Leave Request
+    </a>
+  </div>
+
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th>Applicant</th>
+            <th>Type</th>
+            <th>Leave Category</th>
+            <th>Duration</th>
+            <th>Reason</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for leave in leaves %}
+            <tr>
+              <td>
+                {% if leave.student %}
+                  <strong>{{ leave.student.name }}</strong> (Roll: {{ leave.student.roll_no }})
+                {% elif leave.staff %}
+                  <strong>{{ leave.staff.name }}</strong> (Emp: {{ leave.staff.emp_id }})
+                {% else %}
+                  Unknown
+                {% endif %}
+              </td>
+              <td><span class="badge badge-secondary">{{ leave.applicant_type }}</span></td>
+              <td>{{ leave.get_leave_type_display }}</td>
+              <td>{{ leave.from_date }} to {{ leave.to_date }} (<strong>{{ leave.total_days }} days</strong>)</td>
+              <td>{{ leave.reason|truncatechars:60 }}</td>
+              <td>
+                <span class="badge badge-{% if leave.status == 'Approved' %}success{% elif leave.status == 'Rejected' %}danger{% else %}warning{% endif %}">
+                  {{ leave.status }}
+                </span>
+              </td>
+              <td>
+                {% if leave.status == 'Pending' %}
+                  <div class="btn-group">
+                    <a href="{% url 'leave_status_update' leave.pk 'Approved' %}" class="btn btn-xs btn-success" title="Approve">
+                      <i class="bi bi-check-lg"></i> Approve
+                    </a>
+                    <a href="{% url 'leave_status_update' leave.pk 'Rejected' %}" class="btn btn-xs btn-danger" title="Reject">
+                      <i class="bi bi-x-lg"></i> Reject
+                    </a>
+                  </div>
+                {% else %}
+                  <small class="text-muted">{{ leave.status }}</small>
+                {% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="7" class="text-center py-4 text-muted">No leave requests logged.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} | EduManage{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="form-container fade-in" style="max-width: 700px; margin: 0 auto;">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><i class="bi bi-calendar-plus text-primary"></i> Add Timetable Slot: {{ exam.title }}</div>
+      <a href="{% url 'exam_schedule_list' exam.pk %}" class="btn btn-outline btn-sm"><i class="bi bi-arrow-left"></i> Back</a>
+    </div>
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-grid">
+          <div class="form-group" style="display:none;">
+            {{ form.exam }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Class</label>
+            {{ form.student_class }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Subject</label>
+            {{ form.subject }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Exam Date</label>
+            {{ form.exam_date }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Room / Hall</label>
+            {{ form.room_no }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Start Time</label>
+            {{ form.start_time }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">End Time</label>
+            {{ form.end_time }}
+          </div>
+        </div>
+
+        <div class="form-actions mt-4" style="display:flex; justify-content:flex-end; gap:12px;">
+          <a href="{% url 'exam_schedule_list' exam.pk %}" class="btn btn-secondary">Cancel</a>
+          <button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> Add Slot</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}Examinations & Results | EduManage{% endblock %}
+{% block page_title %}Examination Marks & Grade Sheets{% endblock %}
+
+{% block content %}
+<div class="card fade-in">
+  <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+    <div class="card-title"><i class="bi bi-bar-chart-fill text-primary"></i> Examination Results Ledger</div>
+    <div class="actions-group" style="display:flex; gap:8px; flex-wrap:wrap;">
+      <a href="{% url 'merit_list_view' %}" class="btn btn-outline btn-sm">
+        <i class="bi bi-trophy-fill text-warning"></i> Positions & Merit List
+      </a>
+      <a href="{% url 'bulk_result_cards_pdf' %}" target="_blank" class="btn btn-outline btn-sm">
+        <i class="bi bi-file-earmark-pdf-fill text-danger"></i> Bulk Class Result Cards
+      </a>
+      <a href="{% url 'result_add' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-pencil-square"></i> Record Marks
+      </a>
+    </div>
+  </div>
+
+  <!-- Filter Toolbar -->
+  <div class="filter-toolbar p-3" style="background:#F8FAFC; border-bottom:1px solid #E2E8F0;">
+    <form method="get" class="filter-form" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+      <select name="student_class" class="form-select form-select-sm" style="max-width:160px;">
+        <option value="">All Classes</option>
+        {% for c, c_lbl in classes %}
+          <option value="{{ c }}" {% if class_filter == c %}selected{% endif %}>{{ c_lbl }}</option>
+        {% endfor %}
+      </select>
+
+      <select name="exam_type" class="form-select form-select-sm" style="max-width:180px;">
+        <option value="">All Exam Types</option>
+        <option value="Final" {% if exam_filter == 'Final' %}selected{% endif %}>Annual Exam</option>
+        <option value="Mid-Term" {% if exam_filter == 'Mid-Term' %}selected{% endif %}>Mid-Term Exam</option>
+        <option value="Monthly" {% if exam_filter == 'Monthly' %}selected{% endif %}>Monthly Assessment</option>
+        <option value="Quiz" {% if exam_filter == 'Quiz' %}selected{% endif %}>Quiz / Class Test</option>
+      </select>
+
+      <select name="year" class="form-select form-select-sm" style="max-width:120px;">
+        <option value="">All Years</option>
+        {% for y in years %}
+          <option value="{{ y }}" {% if year_filter == y|stringformat:"i" %}selected{% endif %}>{{ y }}</option>
+        {% endfor %}
+      </select>
+
+      <button type="submit" class="btn btn-sm btn-secondary"><i class="bi bi-funnel"></i> Filter</button>
+      <a href="{% url 'result_list' %}" class="btn btn-sm btn-outline">Reset</a>
+    </form>
+  </div>
+
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th>Student</th>
+            <th>Roll No</th>
+            <th>Class</th>
+            <th>Subject</th>
+            <th>Exam Type</th>
+            <th>Year</th>
+            <th>Obtained</th>
+            <th>Percentage</th>
+            <th>Grade</th>
+            <th>GPA</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in results %}
+            <tr>
+              <td>
+                <a href="{% url 'student_detail' r.student.pk %}" class="font-weight-bold text-dark">
+                  {{ r.student.name }}
+                </a>
+              </td>
+              <td><strong>{{ r.student.roll_no }}</strong></td>
+              <td>Class {{ r.student.student_class }}-{{ r.student.section }}</td>
+              <td><strong>{{ r.subject.name }}</strong></td>
+              <td>{{ r.exam_type }}</td>
+              <td>{{ r.year }}</td>
+              <td class="font-weight-bold">{{ r.marks_obtained }} / {{ r.max_marks }}</td>
+              <td>{{ r.percentage }}%</td>
+              <td>
+                <span class="badge badge-{% if r.grade == 'A+' or r.grade == 'A' %}success{% elif r.grade == 'F' %}danger{% else %}info{% endif %}">
+                  {{ r.grade }}
+                </span>
+              </td>
+              <td>{{ r.gpa|floatformat:2 }}</td>
+              <td>
+                <div class="btn-group">
+                  <a href="{% url 'result_pdf' r.student.pk %}?exam_type={{ r.exam_type }}&year={{ r.year }}" target="_blank" class="btn btn-xs btn-outline" title="Print Result Card">
+                    <i class="bi bi-printer"></i>
+                  </a>
+                  <a href="{% url 'result_edit' r.pk %}" class="btn btn-xs btn-outline" title="Edit">
+                    <i class="bi bi-pencil-fill"></i>
+                  </a>
+                  <a href="{% url 'result_delete' r.pk %}" class="btn btn-xs btn-danger" title="Delete">
+                    <i class="bi bi-trash-fill"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="11" class="text-center py-4 text-muted">No examination marks recorded matching filters.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

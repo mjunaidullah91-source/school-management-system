@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}Subjects – School Management{% endblock %}
+{% block page_title %}Subjects{% endblock %}
+
+{% block content %}
+<div class="page-header fade-in">
+  <div>
+    <h2>Subjects</h2>
+    <div class="breadcrumb">Manage subjects for all classes</div>
+  </div>
+  <a href="{% url 'subject_add' %}" class="btn btn-primary btn-sm" id="addSubjectBtn">
+    <i class="bi bi-plus-lg"></i> Add Subject
+  </a>
+</div>
+
+<div class="card fade-in">
+  <div class="card-header">
+    <h5><i class="bi bi-book-fill" style="color:var(--primary-light);"></i> All Subjects</h5>
+  </div>
+  <div class="card-body p-0">
+    {% if subjects %}
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Subject Name</th><th>Code</th><th>Max Marks</th><th>Class</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          {% for s in subjects %}
+          <tr>
+            <td style="color:var(--text-muted);">{{ forloop.counter }}</td>
+            <td class="fw-600">{{ s.name }}</td>
+            <td><span class="badge badge-info">{{ s.code }}</span></td>
+            <td>{{ s.max_marks }}</td>
+            <td>
+              {% if s.student_class %}
+                <span class="badge badge-primary">Class {{ s.student_class }}</span>
+              {% else %}
+                <span class="text-muted">All Classes</span>
+              {% endif %}
+            </td>
+            <td>
+              <div style="display:flex;gap:0.35rem;">
+                <a href="{% url 'subject_edit' s.pk %}" class="btn btn-warning btn-sm" title="Edit">
+                  <i class="bi bi-pencil-fill"></i>
+                </a>
+                <a href="{% url 'subject_delete' s.pk %}" class="btn btn-danger btn-sm" title="Delete"
+                   data-confirm="Delete subject {{ s.name }}?">
+                  <i class="bi bi-trash-fill"></i>
+                </a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">📚</div>
+      <h4>No Subjects Added</h4>
+      <p>Add subjects to start recording student results.</p>
+      <a href="{% url 'subject_add' %}" class="btn btn-primary" style="margin-top:1rem;" id="emptySubjectBtn">
+        <i class="bi bi-plus-lg"></i> Add First Subject
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

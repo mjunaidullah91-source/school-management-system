@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Students Directory | EduManage{% endblock %}
+{% block page_title %}Student Information System (SIS){% endblock %}
+
+{% block content %}
+<div class="card fade-in">
+  <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+    <div class="card-title"><i class="bi bi-people-fill text-primary"></i> Enrolled Students Directory ({{ total }})</div>
+    <div class="actions-group" style="display:flex; gap:8px; flex-wrap:wrap;">
+      <a href="{% url 'student_id_cards_pdf' %}" target="_blank" class="btn btn-outline btn-sm">
+        <i class="bi bi-card-heading text-teal"></i> Print ID Cards (PDF)
+      </a>
+      <a href="{% url 'export_students_excel' %}" class="btn btn-outline btn-sm">
+        <i class="bi bi-file-earmark-excel-fill text-success"></i> Export Excel
+      </a>
+      <a href="{% url 'student_add' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-person-plus-fill"></i> Admit New Student
+      </a>
+    </div>
+  </div>
+
+  <!-- Search & Filter Toolbar -->
+  <div class="filter-toolbar p-3" style="background:#F8FAFC; border-bottom:1px solid #E2E8F0;">
+    <form method="get" class="filter-form" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+      <div style="flex:1; min-width:200px;">
+        {{ form.query }}
+      </div>
+      <div style="width:160px;">
+        {{ form.student_class }}
+      </div>
+      <div style="width:140px;">
+        {{ form.section }}
+      </div>
+      <button type="submit" class="btn btn-sm btn-secondary"><i class="bi bi-search"></i> Search</button>
+      <a href="{% url 'student_list' %}" class="btn btn-sm btn-outline">Reset</a>
+    </form>
+  </div>
+
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th>Roll No</th>
+            <th>Student Name</th>
+            <th>Father Name</th>
+            <th>Class</th>
+            <th>Section</th>
+            <th>Contact</th>
+            <th>Monthly Fee</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in students %}
+            <tr>
+              <td><strong>{{ s.roll_no }}</strong></td>
+              <td>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  {% if s.photo %}
+                    <img src="{{ s.photo.url }}" alt="{{ s.name }}" style="width:32px; height:32px; border-radius:50%; object-fit:cover;">
+                  {% else %}
+                    <div class="user-avatar" style="width:32px; height:32px; font-size:12px;">{{ s.name|first|upper }}</div>
+                  {% endif %}
+                  <div>
+                    <a href="{% url 'student_detail' s.pk %}" class="text-dark font-weight-bold">{{ s.name }}</a>
+                    {% if s.concession_percent > 0 %}
+                      <span class="badge badge-warning" style="font-size:10px;">{{ s.concession_percent }}% Schol.</span>
+                    {% endif %}
+                  </div>
+                </div>
+              </td>
+              <td>{{ s.father_name }}</td>
+              <td>Class {{ s.student_class }}</td>
+              <td><span class="badge badge-info">{{ s.section }}</span></td>
+              <td>{{ s.contact|default:'—' }}</td>
+              <td>PKR {{ s.monthly_fee|floatformat:2 }}</td>
+              <td>
+                {% if s.is_active %}
+                  <span class="badge badge-success">Active</span>
+                {% else %}
+                  <span class="badge badge-secondary">Inactive</span>
+                {% endif %}
+              </td>
+              <td>
+                <div class="btn-group">
+                  <a href="{% url 'student_detail' s.pk %}" class="btn btn-xs btn-primary" title="View 360 Profile">
+                    <i class="bi bi-eye-fill"></i> Profile
+                  </a>
+                  <a href="{% url 'student_edit' s.pk %}" class="btn btn-xs btn-outline" title="Edit">
+                    <i class="bi bi-pencil-fill"></i>
+                  </a>
+                  <a href="{% url 'student_delete' s.pk %}" class="btn btn-xs btn-danger" title="Delete">
+                    <i class="bi bi-trash-fill"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="9" class="text-center py-4 text-muted">No students matching criteria.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

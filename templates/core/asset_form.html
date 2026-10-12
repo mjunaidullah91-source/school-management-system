@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} | EduManage{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="form-container fade-in" style="max-width: 700px; margin: 0 auto;">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><i class="bi bi-box-seam-fill text-primary"></i> {{ title }}</div>
+      <a href="{% url 'asset_list' %}" class="btn btn-outline btn-sm"><i class="bi bi-arrow-left"></i> Back</a>
+    </div>
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Asset / Item Name</label>
+            {{ form.item_name }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Asset Code / Tag #</label>
+            {{ form.asset_code }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            {{ form.category }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Location / Room Assigned</label>
+            {{ form.location_room }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Purchase Date</label>
+            {{ form.purchase_date }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Purchase Cost (PKR)</label>
+            {{ form.purchase_cost }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Operational Condition</label>
+            {{ form.condition }}
+          </div>
+          <div class="form-group" style="grid-column: span 2;">
+            <label class="form-label">Remarks</label>
+            {{ form.remarks }}
+          </div>
+        </div>
+
+        <div class="form-actions mt-4" style="display:flex; justify-content:flex-end; gap:12px;">
+          <a href="{% url 'asset_list' %}" class="btn btn-secondary">Cancel</a>
+          <button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> Save Asset</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

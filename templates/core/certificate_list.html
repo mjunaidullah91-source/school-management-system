@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Certificates & Documents | EduManage{% endblock %}
+{% block page_title %}Official Certificates Generator{% endblock %}
+
+{% block content %}
+<div class="card fade-in">
+  <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+    <div class="card-title"><i class="bi bi-file-earmark-medical-fill text-primary"></i> School Certificates (TC, Character, Bonafide)</div>
+    <a href="{% url 'certificate_add' %}" class="btn btn-primary btn-sm">
+      <i class="bi bi-plus-circle-fill"></i> Generate Certificate
+    </a>
+  </div>
+
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th>Cert No</th>
+            <th>Certificate Type</th>
+            <th>Student Name</th>
+            <th>Roll No</th>
+            <th>Class</th>
+            <th>Issue Date</th>
+            <th>Session</th>
+            <th>Download</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for cert in certificates %}
+            <tr>
+              <td><code>{{ cert.certificate_no }}</code></td>
+              <td><span class="badge badge-info">{{ cert.get_certificate_type_display }}</span></td>
+              <td>
+                <a href="{% url 'student_detail' cert.student.pk %}" class="text-dark font-weight-bold">
+                  {{ cert.student.name }}
+                </a>
+              </td>
+              <td>{{ cert.student.roll_no }}</td>
+              <td>Class {{ cert.student.student_class }}</td>
+              <td>{{ cert.issue_date }}</td>
+              <td>{{ cert.session }}</td>
+              <td>
+                <a href="{% url 'certificate_pdf' cert.pk %}" target="_blank" class="btn btn-xs btn-primary">
+                  <i class="bi bi-printer-fill"></i> Official PDF
+                </a>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="8" class="text-center py-4 text-muted">No certificates generated yet.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Digital Notice Board | EduManage{% endblock %}
+{% block page_title %}Digital Notice Board & Announcements{% endblock %}
+
+{% block content %}
+<div class="card fade-in">
+  <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+    <div class="card-title"><i class="bi bi-megaphone-fill text-primary"></i> Digital Notice Board</div>
+    <a href="{% url 'notice_add' %}" class="btn btn-primary btn-sm">
+      <i class="bi bi-plus-circle-fill"></i> Post New Notice
+    </a>
+  </div>
+
+  <div class="card-body">
+    <div class="notice-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:16px;">
+      {% for notice in notices %}
+        <div class="card p-3 fade-in" style="background:#FFFFFF; border:1px solid #E2E8F0; {% if notice.is_pinned %}border-top:4px solid #2563EB; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);{% endif %}">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <span class="badge badge-{% if notice.category == 'Emergency' %}danger{% elif notice.category == 'Event' %}success{% elif notice.category == 'Holiday' %}warning{% else %}info{% endif %}">
+              {{ notice.category }}
+            </span>
+            <small class="text-muted"><i class="bi bi-calendar3"></i> {{ notice.publish_date }}</small>
+          </div>
+          <h4 style="margin:6px 0 10px 0; color:#1E293B;">
+            {% if notice.is_pinned %}<i class="bi bi-pin-angle-fill text-primary"></i>{% endif %}
+            {{ notice.title }}
+          </h4>
+          <p style="color:#475569; font-size:13px; line-height:1.5;">{{ notice.content }}</p>
+          <div style="margin-top:auto; padding-top:10px; border-top:1px solid #F1F5F9; display:flex; justify-content:space-between; align-items:center;">
+            <small class="text-muted"><i class="bi bi-people"></i> For: <strong>{{ notice.get_target_audience_display }}</strong></small>
+            {% if notice.is_active %}
+              <span class="badge badge-success" style="font-size:10px;">Active</span>
+            {% else %}
+              <span class="badge badge-secondary" style="font-size:10px;">Archived</span>
+            {% endif %}
+          </div>
+        </div>
+      {% empty %}
+        <div class="text-center py-5 text-muted" style="grid-column:1/-1;">
+          <i class="bi bi-megaphone" style="font-size:32px;"></i>
+          <p class="mt-2">No notices currently published.</p>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

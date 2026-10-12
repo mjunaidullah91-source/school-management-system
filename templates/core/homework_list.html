@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Daily Homework | EduManage{% endblock %}
+{% block page_title %}Daily Homework & Student Assignments{% endblock %}
+
+{% block content %}
+<div class="card fade-in">
+  <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+    <div class="card-title"><i class="bi bi-journal-text text-primary"></i> Daily Homework Tasks</div>
+    <a href="{% url 'homework_add' %}" class="btn btn-primary btn-sm">
+      <i class="bi bi-plus-circle-fill"></i> Assign Homework
+    </a>
+  </div>
+
+  <!-- Class Filter Toolbar -->
+  <div class="filter-toolbar p-3" style="background:#F8FAFC; border-bottom:1px solid #E2E8F0;">
+    <form method="get" class="filter-form" style="display:flex; gap:12px; align-items:center;">
+      <select name="student_class" class="form-select form-select-sm" style="max-width:180px;">
+        <option value="">All Classes</option>
+        {% for c, c_lbl in classes %}
+          <option value="{{ c }}" {% if selected_class == c %}selected{% endif %}>{{ c_lbl }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="btn btn-sm btn-secondary"><i class="bi bi-funnel"></i> Filter</button>
+      <a href="{% url 'homework_list' %}" class="btn btn-sm btn-outline">Reset</a>
+    </form>
+  </div>
+
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th>Class</th>
+            <th>Subject</th>
+            <th>Educator</th>
+            <th>Title</th>
+            <th>Assigned Date</th>
+            <th>Due Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for hw in homework_items %}
+            <tr>
+              <td><strong>Class {{ hw.student_class }} ({{ hw.section }})</strong></td>
+              <td><strong>{{ hw.subject.name }}</strong></td>
+              <td>{{ hw.teacher.name|default:'Class Teacher' }}</td>
+              <td>
+                <strong>{{ hw.title }}</strong>
+                <div class="text-muted" style="font-size:12px;">{{ hw.description|truncatechars:70 }}</div>
+              </td>
+              <td>{{ hw.assigned_date }}</td>
+              <td><span class="badge badge-warning">{{ hw.due_date }}</span></td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="6" class="text-center py-4 text-muted">No homework assignments recorded.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

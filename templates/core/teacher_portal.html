@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block title %}Teacher Portal | EduManage{% endblock %}
+{% block page_title %}Faculty & Teacher Workspace{% endblock %}
+
+{% block content %}
+<div class="portal-welcome card mb-4">
+  <div class="card-body" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+    <div>
+      <h3>Welcome, Teacher {% if staff %}{{ staff.name }}{% else %}{{ request.user.username }}{% endif %}! 👨‍🏫</h3>
+      <p class="text-muted mb-0">Department: <strong>{{ staff.department|default:'Academics' }}</strong> &bull; Designation: <strong>{{ staff.designation|default:'Senior Educator' }}</strong></p>
+    </div>
+    <div style="display:flex; gap:10px;">
+      <a href="{% url 'homework_add' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-circle"></i> Assign Homework
+      </a>
+      <a href="{% url 'student_attendance' %}" class="btn btn-outline btn-sm">
+        <i class="bi bi-calendar-check"></i> Mark Class Attendance
+      </a>
+      <a href="{% url 'result_add' %}" class="btn btn-outline btn-sm">
+        <i class="bi bi-pencil-square"></i> Record Marks
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="row-2col">
+  <!-- Today's Timetable Schedule -->
+  <div class="card fade-in">
+    <div class="card-header">
+      <div class="card-title"><i class="bi bi-clock-history text-primary"></i> My Class Schedule ({{ today_name }})</div>
+      <a href="{% url 'timetable_list' %}" class="btn-link">Full Schedule</a>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th>Period</th>
+              <th>Time</th>
+              <th>Class</th>
+              <th>Subject</th>
+              <th>Room</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for slot in today_timetable %}
+              <tr>
+                <td><span class="badge badge-primary">Period {{ slot.period_number }}</span></td>
+                <td>{{ slot.start_time|time:"g:i A" }} - {{ slot.end_time|time:"g:i A" }}</td>
+                <td><strong>Class {{ slot.student_class }} ({{ slot.section }})</strong></td>
+                <td>{{ slot.subject.name }}</td>
+                <td>{{ slot.room_number }}</td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="5" class="text-center py-4 text-muted">
+                  <i class="bi bi-cup-hot-fill text-teal" style="font-size:24px;"></i>
+                  <p class="mb-0 mt-2">No periods scheduled for today. Free for lesson planning!</p>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Assigned Subjects & Classes -->
+  <div class="card fade-in">
+    <div class="card-header">
+      <div class="card-title"><i class="bi bi-book-half text-teal"></i> My Assigned Subjects</div>
+      <a href="{% url 'subject_list' %}" class="btn-link">View All</a>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th>Subject</th>
+              <th>Code</th>
+              <th>Class</th>
+              <th>Max Marks</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for sub in my_subjects %}
+              <tr>
+                <td><strong>{{ sub.name }}</strong></td>
+                <td><code>{{ sub.code }}</code></td>
+                <td>Class {{ sub.student_class }}</td>
+                <td>{{ sub.max_marks }} (Pass: {{ sub.passing_marks }})</td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="4" class="text-center py-4 text-muted">No subjects assigned yet.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Homework Assigned -->
+<div class="card mt-4 fade-in">
+  <div class="card-header">
+    <div class="card-title"><i class="bi bi-journal-check text-success"></i> Recently Assigned Homework</div>
+    <a href="{% url 'homework_add' %}" class="btn btn-sm btn-primary"><i class="bi bi-plus"></i> New Assignment</a>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th>Class</th>
+            <th>Subject</th>
+            <th>Title</th>
+            <th>Assigned Date</th>
+            <th>Due Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for hw in my_homework %}
+            <tr>
+              <td>Class {{ hw.student_class }}-{{ hw.section }}</td>
+              <td><strong>{{ hw.subject.name }}</strong></td>
+              <td>{{ hw.title }}</td>
+              <td>{{ hw.assigned_date }}</td>
+              <td><span class="badge badge-warning">{{ hw.due_date }}</span></td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="5" class="text-center py-4 text-muted">No active homework posted.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
