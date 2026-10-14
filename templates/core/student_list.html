@@ -7,8 +7,8 @@
   <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
     <div class="card-title"><i class="bi bi-people-fill text-primary"></i> Enrolled Students Directory ({{ total }})</div>
     <div class="actions-group" style="display:flex; gap:8px; flex-wrap:wrap;">
-      <a href="{% url 'student_id_cards_pdf' %}" target="_blank" class="btn btn-outline btn-sm">
-        <i class="bi bi-card-heading text-teal"></i> Print ID Cards (PDF)
+      <a href="{% url 'student_id_cards_pdf' %}?student_class={{ form.student_class.value|default:'' }}&section={{ form.section.value|default:'' }}" target="_blank" class="btn btn-outline btn-sm" title="Download High-Resolution Batch Student ID Cards (PDF)">
+        <i class="bi bi-card-heading text-primary"></i> Bulk Student ID Cards (HD PDF)
       </a>
       <a href="{% url 'export_students_excel' %}" class="btn btn-outline btn-sm">
         <i class="bi bi-file-earmark-excel-fill text-success"></i> Export Excel

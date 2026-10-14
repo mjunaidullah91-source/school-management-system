@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+{% block title %}Accountant & Fee Portal | {{ school_setting.school_name|default:"Ittihad Model School" }}{% endblock %}
+{% block page_title %}Finance & Accounts Command Center{% endblock %}
+
+{% block content %}
+<!-- Welcome & Quick Action Header -->
+<div class="portal-welcome card mb-4 fade-in">
+  <div class="card-body" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+    <div>
+      <h3 class="mb-1">Finance & Accounts Workspace 💼</h3>
+      <p class="text-muted mb-0">
+        Officer: <strong>{% if request.user.staff_profile %}{{ request.user.staff_profile.name }}{% else %}{{ request.user.get_full_name|default:request.user.username }}{% endif %}</strong>
+        &bull; Dept: <strong>Finance & Accounts</strong>
+        &bull; Academic Year: <strong>{{ current_year }}</strong>
+      </p>
+    </div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <a href="{% url 'fee_add' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-circle-fill"></i> New Fee Voucher
+      </a>
+      <a href="{% url 'bulk_voucher_generate' %}" class="btn btn-outline btn-sm">
+        <i class="bi bi-receipt"></i> Bulk Challan Builder
+      </a>
+      <a href="{% url 'teacher_salary_list' %}" class="btn btn-outline btn-sm" style="border-color:#F59E0B; color:#B45309; font-weight:600;">
+        <i class="bi bi-cash-coin text-amber"></i> Teacher Salaries Desk
+      </a>
+      <a href="{% url 'export_fees_excel' %}" class="btn btn-outline btn-sm">
+        <i class="bi bi-file-earmark-excel text-success"></i> Export Ledger (Excel)
+      </a>
+    </div>
+  </div>
+  <!-- Quick Search Bar -->
+  <div style="padding:10px 20px; background:#F8FAFC; border-top:1px solid #E2E8F0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+    <div style="font-size:0.85rem; color:#64748B; font-weight:600;">
+      <i class="bi bi-search"></i> Quick Search Fee Records:
+    </div>
+    <form action="{% url 'fee_list' %}" method="get" style="display:flex; gap:8px; align-items:center; max-width:380px; width:100%;">
+      <div style="position:relative; width:100%;">
+        <i class="bi bi-search" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); font-size:0.82rem; color:#64748B;"></i>
+        <input type="text" name="q" class="form-control form-control-sm" placeholder="Search by Student, Roll #, Voucher #..." style="padding-left:30px; border-radius:8px; height:34px;">
+      </div>
+      <button type="submit" class="btn btn-primary btn-sm" style="height:34px; white-space:nowrap;">
+        Filter Vouchers
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- ── FINANCIAL KPI STATS ─────────────────────────────────── -->
+<div class="stat-grid mb-4">
+  <div class="stat-card fade-in">
+    <div class="stat-icon icon-green">
+      <i class="bi bi-calendar-check-fill"></i>
+    </div>
+    <div class="stat-info">
+      <span class="stat-label">Today's Collections</span>
+      <h3>PKR {{ today_collected|floatformat:2 }}</h3>
+      <span class="stat-sub text-success">Cleared Today</span>
+    </div>
+  </div>
+
+  <div class="stat-card fade-in">
+    <div class="stat-icon icon-blue">
+      <i class="bi bi-cash-stack"></i>
+    </div>
+    <div class="stat-info">
+      <span class="stat-label">{{ current_month }} Total</span>
+      <h3>PKR {{ this_month_collected|floatformat:2 }}</h3>
+      <span class="stat-sub">Monthly Inflow</span>
+    </div>
+  </div>
+
+  <div class="stat-card fade-in">
+    <div class="stat-icon icon-amber">
+      <i class="bi bi-clock-history"></i>
+    </div>
+    <div class="stat-info">
+      <span class="stat-label">Pending / Unpaid Dues</span>
+      <h3 class="text-danger">PKR {{ pending_dues|floatformat:2 }}</h3>
+      <span class="stat-sub text-danger">{{ pending_count }} Outstanding Vouchers</span>
+    </div>
+  </div>
+
+  <div class="stat-card fade-in">
+    <div class="stat-icon icon-purple">
+      <i class="bi bi-check-circle-fill"></i>
+    </div>
+    <div class="stat-info">
+      <span class="stat-label">Total Verified Revenue</span>
+      <h3>PKR {{ total_collected_paid|floatformat:2 }}</h3>
+      <span class="stat-sub text-success">Total Recovered</span>
+    </div>
+  </div>
+</div>
+
+<div class="row-2col mb-4">
+  <!-- Monthly Collections Bar Chart -->
+  <div class="card fade-in">
+    <div class="card-header">
+      <div class="card-title"><i class="bi bi-bar-chart-line-fill text-primary"></i> Monthly Fee Recovery Inflow ({{ current_year }})</div>
+    </div>
+    <div class="card-body">
+      <div style="height:250px;">
+        <canvas id="monthlyCollectionChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Class-wise Fee Recovery Progress -->
+  <div class="card fade-in">
+    <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+      <div class="card-title"><i class="bi bi-pie-chart-fill text-teal"></i> Class-wise Billing & Collections</div>
+      <a href="{% url 'fee_list' %}" class="btn-link">Full Fee Ledger</a>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th>Class</th>
+              <th>Challans</th>
+              <th>Billed Amount</th>
+              <th>Recovered</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in class_fees %}
+              <tr>
+                <td><strong>Class {{ c.student__student_class }}</strong></td>
+                <td><span class="badge badge-info">{{ c.vouchers_count }}</span></td>
+                <td>PKR {{ c.total_billed|default:0|floatformat:2 }}</td>
+                <td class="text-success font-weight-bold">PKR {{ c.total_collected|default:0|floatformat:2 }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4" class="text-center py-4 text-muted">No class fee data available.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row-2col">
+  <!-- Recent Fee Transactions -->
+  <div class="card fade-in">
+    <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+      <div class="card-title"><i class="bi bi-receipt-cutoff text-success"></i> Recent Fee Vouchers & Receipts</div>
+      <a href="{% url 'fee_list' %}" class="btn-link">View All</a>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th>Voucher</th>
+              <th>Student</th>
+              <th>Payable</th>
+              <th>Paid</th>
+              <th>Status</th>
+              <th>Print</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for fee in recent_transactions %}
+              <tr>
+                <td><strong>{{ fee.voucher_no }}</strong></td>
+                <td>
+                  <a href="{% url 'student_detail' fee.student.pk %}" class="btn-link">
+                    {{ fee.student.name }} ({{ fee.student.roll_no }})
+                  </a>
+                </td>
+                <td>PKR {{ fee.amount|floatformat:2 }}</td>
+                <td class="text-success">PKR {{ fee.paid_amount|floatformat:2 }}</td>
+                <td>
+                  <span class="badge badge-{% if fee.status == 'Paid' %}success{% elif fee.status == 'Partial' %}warning{% else %}danger{% endif %}">
+                    {{ fee.status }}
+                  </span>
+                </td>
+                <td>
+                  <a href="{% url 'fee_voucher_pdf' fee.pk %}" target="_blank" class="btn btn-xs btn-outline" title="Print Bank Challan">
+                    <i class="bi bi-printer"></i>
+                  </a>
+                </td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="6" class="text-center py-4 text-muted">No recent vouchers.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overdue Dues & Reminder Action -->
+  <div class="card fade-in">
+    <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+      <div class="card-title"><i class="bi bi-exclamation-triangle-fill text-danger"></i> Defaulters & Overdue Invoices</div>
+      <span class="badge badge-danger">{{ overdue_count }} Overdue</span>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Due Date</th>
+              <th>Balance</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for fee in overdue_vouchers %}
+              <tr>
+                <td>
+                  <strong>{{ fee.student.name }}</strong><br/>
+                  <small class="text-muted">Class {{ fee.student.student_class }}-{{ fee.student.section }} &bull; Roll: {{ fee.student.roll_no }}</small>
+                </td>
+                <td><span class="text-danger">{{ fee.due_date|default:'—' }}</span></td>
+                <td class="text-danger font-weight-bold">PKR {{ fee.balance|floatformat:2 }}</td>
+                <td>
+                  <div style="display:flex; gap:4px;">
+                    <a href="{% url 'fee_edit' fee.pk %}" class="btn btn-xs btn-primary" title="Update / Collect">
+                      <i class="bi bi-pencil"></i> Pay
+                    </a>
+                    <a href="{% url 'fee_reminder_sms' fee.pk %}" class="btn btn-xs btn-outline" title="Send SMS Reminder">
+                      <i class="bi bi-chat-dots text-teal"></i>
+                    </a>
+                  </div>
+                </td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4" class="text-center py-4 text-muted">No overdue accounts detected! All dues are clear.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Monthly Fee Collections Bar Chart
+  const ctx = document.getElementById('monthlyCollectionChart').getContext('2d');
+  const monthLabels = JSON.parse('{{ months_labels|escapejs }}');
+  const monthlyData = JSON.parse('{{ monthly_collection|escapejs }}');
+
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: monthLabels.map(m => m.substring(0, 3)),
+      datasets: [{
+        label: 'Fee Collections (PKR)',
+        data: monthlyData,
+        backgroundColor: 'rgba(37, 99, 235, 0.75)',
+        borderColor: '#2563EB',
+        borderWidth: 1.5,
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return 'PKR ' + context.parsed.y.toLocaleString();
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: function(value) {
+              return 'PKR ' + (value >= 1000 ? (value/1000) + 'k' : value);
+            }
+          }
+        }
+      }
+    }
+  });
+</script>
+{% endblock %}

@@ -78,38 +78,17 @@ TEMPLATES = [
 WSGI_APPLICATION = 'school_management.wsgi.application'
 
 # ─── DATABASE CONFIGURATION (POSTGRESQL PRODUCTION & ENTERPRISE ENGINE) ───────
-HAS_POSTGRES_DRIVER = False
-try:
-    import psycopg2
-    HAS_POSTGRES_DRIVER = True
-except ImportError:
-    try:
-        import psycopg
-        HAS_POSTGRES_DRIVER = True
-    except ImportError:
-        HAS_POSTGRES_DRIVER = False
-
-DB_NAME = os.environ.get('DB_NAME', '')
-
-if HAS_POSTGRES_DRIVER and (DB_NAME or os.environ.get('DB_USER')):
-    DATABASES = {
-        'default': {
-            'ENGINE': os.environ.get('DB_ENGINE', 'django.db.backends.postgresql'),
-            'NAME': os.environ.get('DB_NAME', 'ittihad_school_db'),
-            'USER': os.environ.get('DB_USER', 'postgres'),
-            'PASSWORD': os.environ.get('DB_PASSWORD', 'postgres'),
-            'HOST': os.environ.get('DB_HOST', 'localhost'),
-            'PORT': os.environ.get('DB_PORT', '5432'),
-            'CONN_MAX_AGE': int(os.environ.get('CONN_MAX_AGE', 600)),
-        }
+DATABASES = {
+    'default': {
+        'ENGINE': os.environ.get('DB_ENGINE', 'django.db.backends.postgresql'),
+        'NAME': os.environ.get('DB_NAME', 'edumanage_db'),
+        'USER': os.environ.get('DB_USER', 'postgres'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'postgres'),
+        'HOST': os.environ.get('DB_HOST', '127.0.0.1'),
+        'PORT': os.environ.get('DB_PORT', '5432'),
+        'CONN_MAX_AGE': int(os.environ.get('CONN_MAX_AGE', 600)),
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
+}
 
 # ─── PASSWORD VALIDATION ─────────────────────────────────────────────────────
 AUTH_PASSWORD_VALIDATORS = [

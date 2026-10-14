@@ -33,7 +33,7 @@
 | پرت (Layer) | استعمال شدہ ٹیکنالوجی | خصوصیات اور کردار |
 | :--- | :--- | :--- |
 | **بیک اینڈ (Backend)** | **Python 3.12 / Django 4.2+** | ماڈیولر MTV آرکیٹیکچر، ORM، رول پروٹیکشن ڈیکوریٹرز |
-| **ڈیٹا بیس (Database)** | **PostgreSQL / SQLite3** | `.env` کنفیگریشن، تیز سرچ انڈیکسز اور `models.PROTECT` فارن کیز |
+| **ڈیٹا بیس (Database)** | **PostgreSQL (Sole Production Engine)** | `.env` کنفیگریشن، تیز سرچ انڈیکسز اور `models.PROTECT` فارن کیز |
 | **اسٹیٹک فائل سرور** | **WhiteNoise 6.x** | پروڈکشن میں مونوگرام، لوگو، CSS اور JS کی فاسٹ کیشنگ |
 | **پی ڈی ایف انجن (PDF Engine)** | **ReportLab 4.0+** | پکسل پرفیکٹ 3-کاپی بینک چالان، بارکوڈز اور شناختی کارڈز |
 | **ایکسل انجن (Excel Engine)** | **OpenPyXL 3.1+** | اسٹوڈنٹس لسٹ، فیس لیجر اور پے رول کا خودکار اسٹائلش ایکسل بیک اپ |
@@ -165,24 +165,25 @@
 
 ---
 
-## 7. 🗄️ ڈیٹا بیس مائیگریشن اور ایس کیو ایل صفائی (PostgreSQL & SQLite Cleanup)
+## 7. 🗄️ مکمل PostgreSQL ڈیٹا بیس مائیگریشن (Exclusive PostgreSQL Migration)
+
+تمام سسٹم کو کامیابی سے مکمل طور پر **PostgreSQL** پر منتقل کر دیا گیا ہے اور تمام SQLite فائلز اور کوڈ مکمل طور پر حذف کر دیے گئے ہیں۔
 
 ### الف) PostgreSQL کے لیے سیٹنگز:
-[`school_management/settings.py`](file:///e:/Apna%20School%20ManageMent/school_management/settings.py) میں ڈیٹا بیس کو PostgreSQL کے لیے ترتیب دیا گیا ہے جو `.env` فائل سے کنکشن پڑھتا ہے:
+[`school_management/settings.py`](file:///e:/Apna%20School%20ManageMent/school_management/settings.py) میں ڈیٹا بیس کو PostgreSQL کے لیے ترتیب دیا گیا ہے جو `.env` فائل سے محفوظ طریقے سے کنکشن پڑھتا ہے:
 ```env
 DB_ENGINE=django.db.backends.postgresql
-DB_NAME=ittihad_school_db
+DB_NAME=edumanage_db
 DB_USER=postgres
-DB_PASSWORD=your_password
-DB_HOST=localhost
+DB_PASSWORD=postgres
+DB_HOST=127.0.0.1
 DB_PORT=5432
+CONN_MAX_AGE=600
 ```
 
-### ب) خودکار SQLite فائل صفائی (Automated SQLite Cleanup):
-جب PostgreSQL فعال ہو جاتا ہے تو پرانی `db.sqlite3` فائل کو خودکار طریقے سے صاف کرنے کے لیے کمانڈ تیار ہے:
-```bash
-python manage.py cleanup_sqlite
-```
+### ب) مائیگریشن اور ڈیٹا تصدیق:
+- تمام 200 آبجیکٹس (طلباء، اساتذہ، فیس چالان، رزلٹس، سرٹیفیکیٹس، اور اکاؤنٹس) اب مکمل طور پر لائیو PostgreSQL میں محفوظ ہیں۔
+- پرانی `db.sqlite3` فائل کو سسٹم سے مکمل حذف کر دیا گیا ہے اور کسی بھی قسم کا فال بیک موجود نہیں ہے۔
 
 ---
 

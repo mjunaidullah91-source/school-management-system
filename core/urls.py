@@ -13,11 +13,14 @@ urlpatterns = [
     path('portal/teacher/',              views.teacher_portal,           name='teacher_portal'),
     path('portal/student/',              views.student_portal,           name='student_portal'),
     path('portal/student/change-password/', views.student_change_password, name='student_change_password'),
+    path('portal/accountant/',           views.accountant_portal,        name='accountant_portal'),
 
     # ── Students (SIS) ───────────────────────────────────
     path('students/',                    views.student_list,             name='student_list'),
     path('students/add/',                views.student_add,              name='student_add'),
+    path('students/search-jump/',        views.student_search_jump,      name='student_search_jump'),
     path('students/<int:pk>/',           views.student_detail,           name='student_detail'),
+    path('students/<int:pk>/id-card/',   views.student_single_id_card_pdf, name='student_single_id_card_pdf'),
     path('students/<int:pk>/edit/',      views.student_edit,             name='student_edit'),
     path('students/<int:pk>/reset-password/', views.student_reset_password, name='student_reset_password'),
     path('students/<int:pk>/delete/',    views.student_delete,           name='student_delete'),
@@ -33,7 +36,12 @@ urlpatterns = [
     path('payroll/',                     views.payroll_list,             name='payroll_list'),
     path('payroll/generate/',            views.payroll_generate,         name='payroll_generate'),
     path('payroll/<int:pk>/slip/',       views.payroll_slip_pdf,         name='payroll_slip_pdf'),
+    path('salaries/payroll/<int:pk>/slip/', views.payroll_slip_pdf),
     path('payroll/export/excel/',        views.export_payroll_excel,     name='export_payroll_excel'),
+    path('salaries/teachers/',           views.teacher_salary_list,      name='teacher_salary_list'),
+    path('salaries/teachers/<int:staff_id>/disburse/', views.teacher_salary_disburse, name='teacher_salary_disburse'),
+    path('salaries/teachers/<int:staff_id>/quick-pay/', views.teacher_salary_quick_pay, name='teacher_salary_quick_pay'),
+    path('salaries/teachers/<int:payroll_id>/status/<str:new_status>/', views.teacher_salary_status_update, name='teacher_salary_status_update'),
 
     # ── Advanced Fees & Challans ─────────────────────────
     path('fees/',                        views.fee_list,                 name='fee_list'),
@@ -114,6 +122,8 @@ urlpatterns = [
     path('notifications/',               views.notifications,            name='notifications'),
     path('notifications/mark-read/',     views.mark_notifications_read,  name='mark_notifications_read'),
 
-    # ── API ──────────────────────────────────────────────
+    # ── Global Search & API ──────────────────────────────
+    path('search/',                      views.global_search_view,       name='global_search'),
+    path('api/global-search/',           views.global_search_api,        name='global_search_api'),
     path('api/dashboard-stats/',         views.dashboard_stats_api,      name='dashboard_stats_api'),
 ]

@@ -6,7 +6,7 @@
   <meta name="description" content="{{ school_setting.school_name|default:'Ittihad Model School' }} — Enterprise Portal">
   <title>{% block title %}{{ school_setting.school_name|default:"Ittihad Model School" }}{% endblock %}</title>
   {% load static %}
-  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}?v=2.5">
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <!-- Bootstrap Icons -->
@@ -38,188 +38,385 @@
   </div>
 
   <nav class="sidebar-menu">
-    <div class="menu-label">Main Portals</div>
-    <div class="nav-item">
-      <a href="{% url 'dashboard' %}" class="nav-link">
-        <span class="nav-icon"><i class="bi bi-speedometer2"></i></span>
-        Dashboard
-      </a>
-    </div>
-    <div class="nav-item">
-      <a href="{% url 'teacher_portal' %}" class="nav-link">
-        <span class="nav-icon"><i class="bi bi-person-workspace"></i></span>
-        Teacher Portal
-      </a>
-    </div>
-    <div class="nav-item">
-      <a href="{% url 'student_portal' %}" class="nav-link">
-        <span class="nav-icon"><i class="bi bi-person-badge"></i></span>
-        Student Portal
-      </a>
-    </div>
+    {% if is_accountant_role %}
+      <!-- ════════════ ACCOUNTANT / FEE DEPT SIDEBAR ════════════ -->
+      <div class="menu-label">Finance & Fee Command</div>
+      <div class="nav-item">
+        <a href="{% url 'accountant_portal' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-wallet2 text-success"></i></span>
+          Accounts Dashboard
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'fee_list' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-cash-stack"></i></span>
+          Fee Ledger & Collections
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'fee_add' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-plus-circle-fill text-primary"></i></span>
+          Create Fee Voucher
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'bulk_voucher_generate' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-receipt"></i></span>
+          Bulk Challan Builder
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'export_fees_excel' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-file-earmark-excel text-success"></i></span>
+          Export Fee Ledger (Excel)
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'teacher_salary_list' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-cash-coin text-amber"></i></span>
+          Teacher Salaries
+        </a>
+      </div>
 
-    <div class="menu-label">Students & Academics</div>
-    <div class="nav-item">
-      <a href="{% url 'student_list' %}" class="nav-link">
-        <span class="nav-icon"><i class="bi bi-people-fill"></i></span>
-        Students Directory
-      </a>
-    </div>
-    <div class="nav-item">
-      <a href="{% url 'student_id_cards_pdf' %}" target="_blank" class="nav-link">
-        <span class="nav-icon"><i class="bi bi-card-heading"></i></span>
-        Student ID Cards
-      </a>
-    </div>
-    <div class="nav-item">
-      <a href="{% url 'subject_list' %}" class="nav-link">
-        <span class="nav-icon"><i class="bi bi-book-half"></i></span>
-        Subjects
-      </a>
-    </div>
-    <div class="nav-item">
-      <a href="{% url 'timetable_list' %}" class="nav-link">
-        <span class="nav-icon"><i class="bi bi-calendar3"></i></span>
-        Class Timetable
-      </a>
-    </div>
-    <div class="nav-item">
-      <a href="{% url 'homework_list' %}" class="nav-link">
-        <span class="nav-icon"><i class="bi bi-journal-text"></i></span>
-        Daily Homework
-      </a>
-    </div>
+      <div class="menu-label">Students & Billing</div>
+      <div class="nav-item">
+        <a href="{% url 'student_list' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-people-fill"></i></span>
+          Students Directory
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'sms_logs' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-chat-dots-fill"></i></span>
+          Fee Reminder Logs
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'notice_list' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-megaphone-fill"></i></span>
+          Notice Board
+        </a>
+      </div>
 
-    <div class="menu-label">Finance & Fee Vouchers</div>
-    <div class="nav-item">
-      <a href="{% url 'fee_list' %}" class="nav-link">
-        <span class="nav-icon"><i class="bi bi-cash-stack"></i></span>
-        Fee Ledger
-      </a>
-    </div>
-    <div class="nav-item">
-      <a href="{% url 'bulk_voucher_generate' %}" class="nav-link">
-        <span class="nav-icon"><i class="bi bi-file-earmark-plus"></i></span>
-        Challan Builder
-      </a>
-    </div>
+    {% elif is_teacher_role %}
+      <!-- ════════════ TEACHER / FACULTY SIDEBAR ════════════ -->
+      <div class="menu-label">Teacher Workspace</div>
+      <div class="nav-item">
+        <a href="{% url 'teacher_portal' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-person-workspace text-primary"></i></span>
+          Faculty Dashboard
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'timetable_list' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-calendar3"></i></span>
+          My Class Timetable
+        </a>
+      </div>
 
-    <div class="menu-label">Examinations & Merit</div>
-    <div class="nav-item">
-      <a href="{% url 'exam_list' %}" class="nav-link">
-        <span class="nav-icon"><i class="bi bi-award-fill"></i></span>
-        Exam Sessions
-      </a>
-    </div>
-    <div class="nav-item">
-      <a href="{% url 'result_list' %}" class="nav-link">
-        <span class="nav-icon"><i class="bi bi-bar-chart-fill"></i></span>
-        Results & Grades
-      </a>
-    </div>
-    <div class="nav-item">
-      <a href="{% url 'merit_list_view' %}" class="nav-link">
-        <span class="nav-icon"><i class="bi bi-trophy-fill"></i></span>
-        Positions & Merit
-      </a>
-    </div>
+      <div class="menu-label">Classroom Operations</div>
+      <div class="nav-item">
+        <a href="{% url 'homework_list' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-journal-text"></i></span>
+          Daily Homework
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'homework_add' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-plus-circle text-primary"></i></span>
+          Assign Homework
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'student_attendance' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-check2-square text-success"></i></span>
+          Class Attendance
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'result_add' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-pencil-square text-amber"></i></span>
+          Record Exam Marks
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'result_list' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-bar-chart-fill"></i></span>
+          Results & Grades
+        </a>
+      </div>
 
-    <div class="menu-label">Attendance & Leaves</div>
-    <div class="nav-item">
-      <a href="{% url 'student_attendance' %}" class="nav-link">
-        <span class="nav-icon"><i class="bi bi-check2-square"></i></span>
-        Student Attendance
-      </a>
-    </div>
-    <div class="nav-item">
-      <a href="{% url 'staff_attendance' %}" class="nav-link">
-        <span class="nav-icon"><i class="bi bi-person-check-fill"></i></span>
-        Staff Attendance
-      </a>
-    </div>
-    <div class="nav-item">
-      <a href="{% url 'leave_list' %}" class="nav-link">
-        <span class="nav-icon"><i class="bi bi-envelope-paper-fill"></i></span>
-        Leave Requests
-      </a>
-    </div>
-    <div class="nav-item">
-      <a href="{% url 'sms_logs' %}" class="nav-link">
-        <span class="nav-icon"><i class="bi bi-chat-dots-fill"></i></span>
-        SMS / WhatsApp Logs
-      </a>
-    </div>
+      <div class="menu-label">Staff Desk</div>
+      <div class="nav-item">
+        <a href="{% url 'leave_list' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-envelope-paper-fill"></i></span>
+          My Leave Requests
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'leave_apply' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-send-fill text-primary"></i></span>
+          Apply For Leave
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'notice_list' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-megaphone-fill"></i></span>
+          School Notices
+        </a>
+      </div>
 
-    <div class="menu-label">Staff & HR</div>
-    <div class="nav-item">
-      <a href="{% url 'staff_list' %}" class="nav-link">
-        <span class="nav-icon"><i class="bi bi-person-lines-fill"></i></span>
-        Staff Directory
-      </a>
-    </div>
-    <div class="nav-item">
-      <a href="{% url 'payroll_list' %}" class="nav-link">
-        <span class="nav-icon"><i class="bi bi-wallet2"></i></span>
-        Monthly Payroll
-      </a>
-    </div>
+    {% elif is_student_role %}
+      <!-- ════════════ STUDENT / PARENT SIDEBAR ════════════ -->
+      <div class="menu-label">Student / Parent Portal</div>
+      <div class="nav-item">
+        <a href="{% url 'student_portal' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-person-badge text-info"></i></span>
+          Student Dashboard
+        </a>
+      </div>
+      {% if current_student %}
+        <div class="nav-item">
+          <a href="{% url 'student_fee_detail' current_student.pk %}" class="nav-link">
+            <span class="nav-icon"><i class="bi bi-receipt text-teal"></i></span>
+            My Fee Vouchers
+          </a>
+        </div>
+        <div class="nav-item">
+          <a href="{% url 'student_result_detail' current_student.pk %}" class="nav-link">
+            <span class="nav-icon"><i class="bi bi-award-fill text-warning"></i></span>
+            My Result Cards
+          </a>
+        </div>
+        <div class="nav-item">
+          <a href="{% url 'student_single_id_card_pdf' current_student.pk %}" target="_blank" class="nav-link">
+            <span class="nav-icon"><i class="bi bi-card-heading text-primary"></i></span>
+            Digital Student ID Card
+          </a>
+        </div>
+      {% endif %}
+      <div class="nav-item">
+        <a href="{% url 'homework_list' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-journal-check text-purple"></i></span>
+          My Daily Homework
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'notice_list' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-megaphone-fill"></i></span>
+          School Notices
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'student_change_password' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-key-fill text-amber"></i></span>
+          Change Password
+        </a>
+      </div>
 
-    <div class="menu-label">Library & Assets</div>
-    <div class="nav-item">
-      <a href="{% url 'book_list' %}" class="nav-link">
-        <span class="nav-icon"><i class="bi bi-book-fill"></i></span>
-        Library Books
-      </a>
-    </div>
-    <div class="nav-item">
-      <a href="{% url 'book_issue_list' %}" class="nav-link">
-        <span class="nav-icon"><i class="bi bi-arrow-left-right"></i></span>
-        Book Issues / Returns
-      </a>
-    </div>
-    <div class="nav-item">
-      <a href="{% url 'asset_list' %}" class="nav-link">
-        <span class="nav-icon"><i class="bi bi-box-seam-fill"></i></span>
-        Assets & Inventory
-      </a>
-    </div>
+    {% else %}
+      <!-- ════════════ FULL SYSTEM ADMINISTRATOR SIDEBAR ════════════ -->
+      <div class="menu-label">Command Center</div>
+      <div class="nav-item">
+        <a href="{% url 'dashboard' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-speedometer2"></i></span>
+          Admin Dashboard
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'teacher_portal' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-person-workspace"></i></span>
+          Teacher Portal View
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'accountant_portal' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-wallet2 text-success"></i></span>
+          Accountant Portal View
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'student_portal' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-person-badge"></i></span>
+          Student Portal View
+        </a>
+      </div>
 
-    <div class="menu-label">Certificates & Notices</div>
-    <div class="nav-item">
-      <a href="{% url 'certificate_list' %}" class="nav-link">
-        <span class="nav-icon"><i class="bi bi-file-earmark-medical-fill"></i></span>
-        Certificates (TC/Bonafide)
-      </a>
-    </div>
-    <div class="nav-item">
-      <a href="{% url 'notice_list' %}" class="nav-link">
-        <span class="nav-icon"><i class="bi bi-megaphone-fill"></i></span>
-        Notice Board
-      </a>
-    </div>
+      <div class="menu-label">Students & Academics</div>
+      <div class="nav-item">
+        <a href="{% url 'student_list' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-people-fill"></i></span>
+          Students Directory
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'student_id_cards_pdf' %}" target="_blank" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-card-heading"></i></span>
+          Bulk Student ID Cards
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'subject_list' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-book-half"></i></span>
+          Subjects & Courses
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'timetable_list' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-calendar3"></i></span>
+          Class Timetable
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'homework_list' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-journal-text"></i></span>
+          Daily Homework
+        </a>
+      </div>
 
-    <div class="menu-label">Configuration</div>
-    <div class="nav-item">
-      <a href="{% url 'school_settings_view' %}" class="nav-link">
-        <span class="nav-icon"><i class="bi bi-sliders"></i></span>
-        School Branding
-      </a>
-    </div>
-    <div class="nav-item">
-      <a href="{% url 'notifications' %}" class="nav-link">
-        <span class="nav-icon"><i class="bi bi-bell-fill"></i></span>
-        Notifications
-        {% if unread_notifications %}
-          <span class="nav-badge">{{ unread_notifications }}</span>
-        {% endif %}
-      </a>
-    </div>
-    <div class="nav-item">
-      <a href="/admin/" class="nav-link" target="_blank">
-        <span class="nav-icon"><i class="bi bi-shield-lock-fill"></i></span>
-        Admin Panel
-      </a>
-    </div>
+      <div class="menu-label">Finance & Fee Vouchers</div>
+      <div class="nav-item">
+        <a href="{% url 'fee_list' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-cash-stack"></i></span>
+          Fee Ledger
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'bulk_voucher_generate' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-file-earmark-plus"></i></span>
+          Bulk Challan Builder
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'teacher_salary_list' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-cash-coin text-amber"></i></span>
+          Teacher Salaries
+        </a>
+      </div>
+
+      <div class="menu-label">Examinations & Merit</div>
+      <div class="nav-item">
+        <a href="{% url 'exam_list' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-award-fill"></i></span>
+          Exam Sessions
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'result_list' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-bar-chart-fill"></i></span>
+          Results & Grades
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'merit_list_view' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-trophy-fill"></i></span>
+          Positions & Merit List
+        </a>
+      </div>
+
+      <div class="menu-label">Attendance & Leaves</div>
+      <div class="nav-item">
+        <a href="{% url 'student_attendance' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-check2-square"></i></span>
+          Student Attendance
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'staff_attendance' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-person-check-fill"></i></span>
+          Staff Attendance
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'leave_list' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-envelope-paper-fill"></i></span>
+          Leave Requests
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'sms_logs' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-chat-dots-fill"></i></span>
+          SMS / WhatsApp Logs
+        </a>
+      </div>
+
+      <div class="menu-label">Staff & HR</div>
+      <div class="nav-item">
+        <a href="{% url 'staff_list' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-person-lines-fill"></i></span>
+          Staff Directory
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'teacher_salary_list' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-cash-coin text-amber"></i></span>
+          Teacher Salaries Desk
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'payroll_list' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-wallet2"></i></span>
+          Monthly Payroll
+        </a>
+      </div>
+
+      <div class="menu-label">Library & Assets</div>
+      <div class="nav-item">
+        <a href="{% url 'book_list' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-book-fill"></i></span>
+          Library Books
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'book_issue_list' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-arrow-left-right"></i></span>
+          Book Issues / Returns
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'asset_list' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-box-seam-fill"></i></span>
+          Assets & Inventory
+        </a>
+      </div>
+
+      <div class="menu-label">Certificates & Notices</div>
+      <div class="nav-item">
+        <a href="{% url 'certificate_list' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-file-earmark-medical-fill"></i></span>
+          Certificates (TC/Bonafide)
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'notice_list' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-megaphone-fill"></i></span>
+          Notice Board
+        </a>
+      </div>
+
+      <div class="menu-label">Configuration</div>
+      <div class="nav-item">
+        <a href="{% url 'school_settings_view' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-sliders"></i></span>
+          School Branding
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'notifications' %}" class="nav-link">
+          <span class="nav-icon"><i class="bi bi-bell-fill"></i></span>
+          Notifications
+          {% if unread_notifications %}
+            <span class="nav-badge">{{ unread_notifications }}</span>
+          {% endif %}
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="/admin/" class="nav-link" target="_blank">
+          <span class="nav-icon"><i class="bi bi-shield-lock-fill"></i></span>
+          Django Admin
+        </a>
+      </div>
+    {% endif %}
   </nav>
 
   <div class="sidebar-footer">
@@ -227,7 +424,7 @@
       <div class="user-avatar">{{ request.user.username|first|upper }}</div>
       <div class="user-info">
         <div class="name">{{ request.user.get_full_name|default:request.user.username }}</div>
-        <div class="role">{% if request.user.is_superuser %}System Admin{% elif request.user.staff_profile %}Teacher{% else %}Portal User{% endif %}</div>
+        <div class="role" style="color:#38BDF8; font-weight:600; font-size:0.75rem;">{{ user_role_label }}</div>
       </div>
     </div>
     <a href="{% url 'logout' %}" class="logout-btn" title="Logout">
@@ -238,22 +435,71 @@
 
 <!-- ── TOPBAR ─────────────────────────────────────────────── -->
 <header class="topbar">
-  <div style="display:flex; align-items:center; gap:12px;">
-    <button class="btn-icon" id="menuToggle" aria-label="Toggle menu">
+  <div class="topbar-left">
+    <button class="btn-icon" id="menuToggle" aria-label="Toggle menu" title="Toggle Navigation Menu">
       <i class="bi bi-list"></i>
     </button>
-    <div class="topbar-title">{% block page_title %}EduManage Dashboard{% endblock %}</div>
+    <div class="topbar-title">{% block page_title %}EduManage Portal{% endblock %}</div>
   </div>
+
+  {% if not is_student_role %}
+    <!-- Global Fast Search & Autocomplete Box -->
+    <form action="{% url 'global_search' %}" method="get" id="globalSearchForm" class="topbar-search-form">
+      <div class="topbar-search-wrapper">
+        <input type="text" name="q" id="globalSearchInput" placeholder="Search (Students, Vouchers, Results)..." autocomplete="off">
+        <i class="bi bi-search"></i>
+        <!-- Live Autocomplete Dropdown Container -->
+        <div id="globalSearchDropdown" class="global-search-dropdown" style="display:none;"></div>
+      </div>
+    </form>
+  {% endif %}
+
   <div class="topbar-actions">
-    <a href="{% url 'bulk_voucher_generate' %}" class="btn btn-outline btn-sm" title="Generate Monthly Vouchers">
-      <i class="bi bi-receipt"></i> <span class="d-none-sm">Challan Builder</span>
-    </a>
-    <a href="{% url 'student_attendance' %}" class="btn btn-outline btn-sm" title="Mark Daily Attendance">
-      <i class="bi bi-check-circle"></i> <span class="d-none-sm">Attendance</span>
-    </a>
-    <a href="{% url 'student_add' %}" class="btn btn-primary btn-sm" id="quickAddStudent">
-      <i class="bi bi-person-plus-fill"></i> <span class="d-none-sm">Admit Student</span>
-    </a>
+    {% if is_accountant_role %}
+      <a href="{% url 'fee_add' %}" class="btn btn-primary btn-sm" title="Add Fee Voucher">
+        <i class="bi bi-plus-circle-fill"></i> <span class="d-none-sm">New Voucher</span>
+      </a>
+      <a href="{% url 'bulk_voucher_generate' %}" class="btn btn-outline btn-sm" title="Generate Monthly Vouchers">
+        <i class="bi bi-receipt"></i> <span class="d-none-sm">Challan Builder</span>
+      </a>
+      <a href="{% url 'export_fees_excel' %}" class="btn btn-outline btn-sm" title="Export Fee Ledger">
+        <i class="bi bi-file-earmark-excel"></i> <span class="d-none-sm">Excel Ledger</span>
+      </a>
+    {% elif is_teacher_role %}
+      <a href="{% url 'homework_add' %}" class="btn btn-primary btn-sm" title="Assign Homework">
+        <i class="bi bi-plus-circle"></i> <span class="d-none-sm">Assign Homework</span>
+      </a>
+      <a href="{% url 'student_attendance' %}" class="btn btn-outline btn-sm" title="Mark Attendance">
+        <i class="bi bi-check-circle"></i> <span class="d-none-sm">Attendance</span>
+      </a>
+      <a href="{% url 'result_add' %}" class="btn btn-outline btn-sm" title="Record Marks">
+        <i class="bi bi-pencil-square"></i> <span class="d-none-sm">Record Marks</span>
+      </a>
+    {% elif is_student_role %}
+      {% if current_student %}
+        <a href="{% url 'result_pdf' current_student.pk %}" target="_blank" class="btn btn-outline btn-sm" title="Download Report Card">
+          <i class="bi bi-file-earmark-pdf"></i> <span class="d-none-sm">Report Card</span>
+        </a>
+        <a href="{% url 'student_single_id_card_pdf' current_student.pk %}" target="_blank" class="btn btn-primary btn-sm" title="Download ID Card">
+          <i class="bi bi-card-heading"></i> <span class="d-none-sm">My ID Card</span>
+        </a>
+      {% endif %}
+      <a href="{% url 'student_change_password' %}" class="btn btn-warning btn-sm" title="Change Password">
+        <i class="bi bi-key-fill"></i> <span class="d-none-sm">Password</span>
+      </a>
+    {% else %}
+      <!-- Admin Topbar Actions -->
+      <a href="{% url 'bulk_voucher_generate' %}" class="btn btn-outline btn-sm" title="Generate Monthly Vouchers">
+        <i class="bi bi-receipt"></i> <span class="d-none-sm">Challan Builder</span>
+      </a>
+      <a href="{% url 'student_attendance' %}" class="btn btn-outline btn-sm" title="Mark Daily Attendance">
+        <i class="bi bi-check-circle"></i> <span class="d-none-sm">Attendance</span>
+      </a>
+      <a href="{% url 'student_add' %}" class="btn btn-primary btn-sm" id="quickAddStudent">
+        <i class="bi bi-person-plus-fill"></i> <span class="d-none-sm">Admit Student</span>
+      </a>
+    {% endif %}
+
     <a href="{% url 'notifications' %}" class="btn-icon" id="notifBtn" title="Notifications">
       <i class="bi bi-bell"></i>
       {% if unread_notifications %}<span class="notif-dot"></span>{% endif %}
@@ -280,6 +526,179 @@
 </main>
 
 <script src="{% static 'js/main.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const searchInput = document.getElementById('globalSearchInput');
+  const searchDropdown = document.getElementById('globalSearchDropdown');
+  const searchForm = document.getElementById('globalSearchForm');
+
+  if (!searchInput || !searchDropdown) return;
+
+  let debounceTimer = null;
+
+  searchInput.addEventListener('input', function () {
+    const q = this.value.trim();
+    clearTimeout(debounceTimer);
+
+    if (q.length < 1) {
+      searchDropdown.style.display = 'none';
+      searchDropdown.innerHTML = '';
+      return;
+    }
+
+    debounceTimer = setTimeout(() => {
+      fetch(`/api/global-search/?q=${encodeURIComponent(q)}`)
+        .then(res => res.json())
+        .then(data => {
+          renderSearchResults(data, q);
+        })
+        .catch(err => {
+          console.error("Global search error:", err);
+        });
+    }, 200);
+  });
+
+  function renderSearchResults(data, query) {
+    if (data.total_count === 0) {
+      searchDropdown.innerHTML = `
+        <div style="padding:16px; text-align:center; color:#64748B; font-size:0.85rem;">
+          <i class="bi bi-info-circle me-1"></i> No matching records found for "<strong>${escapeHtml(query)}</strong>"
+          <br><small style="color:#94A3B8;">Press Enter to search full database directory</small>
+        </div>
+      `;
+      searchDropdown.style.display = 'block';
+      return;
+    }
+
+    let html = '';
+
+    // 1. Matching Students
+    if (data.students && data.students.length > 0) {
+      html += `
+        <div style="background:#F1F5F9; padding:6px 12px; font-size:0.72rem; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.5px; display:flex; justify-content:space-between; align-items:center;">
+          <span><i class="bi bi-people-fill text-primary"></i> Students (${data.students.length})</span>
+          <a href="/students/?query=${encodeURIComponent(query)}" style="font-size:0.7rem; color:#2563EB; text-decoration:none;">View all &rarr;</a>
+        </div>
+      `;
+      data.students.forEach(s => {
+        html += `
+          <div style="padding:8px 12px; border-bottom:1px solid #F1F5F9; display:flex; justify-content:space-between; align-items:center; transition:background 0.15s;" onmouseover="this.style.background='#F8FAFC'" onmouseout="this.style.background='white'">
+            <a href="${s.url}" style="text-decoration:none; color:#1E293B; display:flex; align-items:center; gap:8px; flex:1;">
+              <span style="display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:50%; background:#2563EB; color:#fff; font-size:12px; font-weight:700;">${s.name.charAt(0).toUpperCase()}</span>
+              <div>
+                <strong style="font-size:0.85rem; color:#0F172A;">${escapeHtml(s.name)}</strong>
+                <div style="font-size:0.75rem; color:#64748B;">Roll: <strong>${s.roll_no}</strong> &bull; ${s.class_sec}</div>
+              </div>
+            </a>
+            <div style="display:flex; gap:4px;">
+              <a href="${s.id_card_url}" target="_blank" class="btn btn-xs btn-outline" title="Digital ID Card" style="padding:2px 6px; font-size:11px;">
+                <i class="bi bi-card-heading text-success"></i> ID
+              </a>
+              <a href="${s.url}" class="btn btn-xs btn-outline" title="360 Dossier" style="padding:2px 6px; font-size:11px;">
+                <i class="bi bi-person-lines-fill text-primary"></i> Dossier
+              </a>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    // 2. Matching Fee Vouchers
+    if (data.fees && data.fees.length > 0) {
+      html += `
+        <div style="background:#F1F5F9; padding:6px 12px; font-size:0.72rem; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.5px; display:flex; justify-content:space-between; align-items:center;">
+          <span><i class="bi bi-receipt text-success"></i> Fee Vouchers (${data.fees.length})</span>
+          <a href="/fees/?q=${encodeURIComponent(query)}" style="font-size:0.7rem; color:#2563EB; text-decoration:none;">View all &rarr;</a>
+        </div>
+      `;
+      data.fees.forEach(f => {
+        const badgeClass = f.status === 'Paid' ? 'success' : f.status === 'Partial' ? 'warning' : 'danger';
+        html += `
+          <div style="padding:8px 12px; border-bottom:1px solid #F1F5F9; display:flex; justify-content:space-between; align-items:center; transition:background 0.15s;" onmouseover="this.style.background='#F8FAFC'" onmouseout="this.style.background='white'">
+            <div style="flex:1;">
+              <div style="display:flex; align-items:center; gap:6px;">
+                <code style="font-size:0.78rem; font-weight:700; color:#1E3A8A;">${f.voucher_no}</code>
+                <span class="badge badge-${badgeClass}" style="font-size:10px; padding:2px 6px;">${f.status}</span>
+              </div>
+              <div style="font-size:0.75rem; color:#64748B;">${escapeHtml(f.student_name)} (Roll: ${f.roll_no}) &bull; ${f.month_year}</div>
+            </div>
+            <div style="text-align:right; display:flex; align-items:center; gap:6px;">
+              <span style="font-size:0.8rem; font-weight:700; color:#0F172A;">PKR ${f.amount}</span>
+              <a href="${f.pdf_url}" target="_blank" class="btn btn-xs btn-outline" title="Print Challan" style="padding:2px 6px; font-size:11px;">
+                <i class="bi bi-printer"></i>
+              </a>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    // 3. Matching Examination Results
+    if (data.results && data.results.length > 0) {
+      html += `
+        <div style="background:#F1F5F9; padding:6px 12px; font-size:0.72rem; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.5px; display:flex; justify-content:space-between; align-items:center;">
+          <span><i class="bi bi-award-fill text-warning"></i> Exam Results (${data.results.length})</span>
+          <a href="/results/?q=${encodeURIComponent(query)}" style="font-size:0.7rem; color:#2563EB; text-decoration:none;">View all &rarr;</a>
+        </div>
+      `;
+      data.results.forEach(r => {
+        html += `
+          <div style="padding:8px 12px; border-bottom:1px solid #F1F5F9; display:flex; justify-content:space-between; align-items:center; transition:background 0.15s;" onmouseover="this.style.background='#F8FAFC'" onmouseout="this.style.background='white'">
+            <div style="flex:1;">
+              <div style="font-size:0.85rem; font-weight:600; color:#0F172A;">${escapeHtml(r.student_name)} (Roll: ${r.roll_no})</div>
+              <div style="font-size:0.75rem; color:#64748B;">${escapeHtml(r.subject_name)} &bull; ${r.exam_type} ${r.year}</div>
+            </div>
+            <div style="text-align:right; display:flex; align-items:center; gap:6px;">
+              <span class="badge badge-info" style="font-size:10px;">${r.grade} (${r.marks})</span>
+              <a href="${r.pdf_url}" target="_blank" class="btn btn-xs btn-outline" title="Result Card" style="padding:2px 6px; font-size:11px;">
+                <i class="bi bi-printer"></i>
+              </a>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    // Footer: View Full Filtered List Page
+    html += `
+      <a href="${data.full_search_url}" style="display:block; padding:10px; background:#F8FAFC; text-align:center; font-size:0.82rem; font-weight:700; color:#2563EB; text-decoration:none; border-top:1px solid #E2E8F0;" onmouseover="this.style.background='#EEF2FF'" onmouseout="this.style.background='#F8FAFC'">
+        View all matching records in full directory (${data.total_count}) &rarr;
+      </a>
+    `;
+
+    searchDropdown.innerHTML = html;
+    searchDropdown.style.display = 'block';
+  }
+
+  function escapeHtml(text) {
+    if (!text) return '';
+    return text.replace(/[&<>"']/g, function (m) {
+      return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'}[m];
+    });
+  }
+
+  // Close dropdown on click outside
+  document.addEventListener('click', function (e) {
+    if (!searchForm.contains(e.target)) {
+      searchDropdown.style.display = 'none';
+    }
+  });
+
+  // Close on Escape key
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      searchDropdown.style.display = 'none';
+    }
+  });
+
+  // Re-open if input focused with existing text
+  searchInput.addEventListener('focus', function () {
+    if (this.value.trim().length >= 1 && searchDropdown.innerHTML.trim() !== '') {
+      searchDropdown.style.display = 'block';
+    }
+  });
+});
+</script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>

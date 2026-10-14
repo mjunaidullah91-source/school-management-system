@@ -156,8 +156,9 @@ def generate_fee_voucher_pdf(fees, school_setting):
     )
 
     styles = getSampleStyleSheet()
-    title_style = ParagraphStyle('ChallanTitle', parent=styles['Normal'], fontSize=8.5, fontName=FONT_BOLD, textColor=PRIMARY_COLOR, alignment=1)
-    sub_style = ParagraphStyle('ChallanSub', parent=styles['Normal'], fontSize=6, fontName=FONT_REGULAR, textColor=DARK_TEXT, alignment=1)
+    title_style = ParagraphStyle('ChallanTitle', parent=styles['Normal'], fontSize=8.5, leading=11.5, fontName=FONT_BOLD, textColor=PRIMARY_COLOR, alignment=1, spaceAfter=2)
+    sub_style = ParagraphStyle('ChallanSub', parent=styles['Normal'], fontSize=6, leading=8.5, fontName=FONT_REGULAR, textColor=DARK_TEXT, alignment=1, spaceAfter=1.5)
+    badge_style = ParagraphStyle('ChallanBadge', parent=sub_style, fontSize=6.5, leading=9, fontName=FONT_BOLD, textColor=SECONDARY_COLOR, spaceBefore=2)
     body_bold = ParagraphStyle('ChallanBold', parent=styles['Normal'], fontSize=7, fontName=FONT_BOLD)
     body_norm = ParagraphStyle('ChallanNorm', parent=styles['Normal'], fontSize=7, fontName=FONT_REGULAR)
     right_bold = ParagraphStyle('ChallanRightBold', parent=styles['Normal'], fontSize=7, fontName=FONT_BOLD, alignment=2)
@@ -181,8 +182,9 @@ def generate_fee_voucher_pdf(fees, school_setting):
             logo_img = get_school_logo_flowable(school_setting, width=22*mm, height=22*mm)
             header_text_block = [
                 Paragraph(clean_pdf_text(school_setting.school_name.upper()), title_style),
+                Spacer(1, 1 * mm),
                 Paragraph(clean_pdf_text(school_setting.tagline), sub_style),
-                Paragraph(f"<b>{copy_name}</b> | Fee Challan", ParagraphStyle('Badge', parent=sub_style, fontName=FONT_BOLD, textColor=SECONDARY_COLOR))
+                Paragraph(f"<b>{copy_name}</b> | Fee Challan", badge_style)
             ]
             
             if logo_img:
@@ -190,15 +192,15 @@ def generate_fee_voucher_pdf(fees, school_setting):
                 head_table.setStyle(TableStyle([
                     ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
                     ('ALIGN', (0,0), (0,0), 'CENTER'),
-                    ('TOPPADDING', (0,0), (-1,-1), 0),
-                    ('BOTTOMPADDING', (0,0), (-1,-1), 1),
+                    ('TOPPADDING', (0,0), (-1,-1), 1),
+                    ('BOTTOMPADDING', (0,0), (-1,-1), 2),
                 ]))
                 copy_elements.append(head_table)
             else:
                 for p in header_text_block:
                     copy_elements.append(p)
                     
-            copy_elements.append(Spacer(1, 1.5 * mm))
+            copy_elements.append(Spacer(1, 2 * mm))
 
             # 2. Bank Account Details Box
             bank_info = [
@@ -360,9 +362,9 @@ def generate_bulk_result_cards_pdf(students_result_data, exam_name, academic_yea
 def _build_single_result_card_story(student, exam_name, academic_year, results, school_setting, position_text, attendance_pct, styles):
     story = []
 
-    header_style = ParagraphStyle('SchoolHead', parent=styles['Normal'], fontSize=16, fontName=FONT_BOLD, textColor=PRIMARY_COLOR, alignment=1)
-    tag_style = ParagraphStyle('SchoolTag', parent=styles['Normal'], fontSize=8.5, fontName=FONT_REGULAR, textColor=DARK_TEXT, alignment=1)
-    card_title = ParagraphStyle('CardTitle', parent=styles['Normal'], fontSize=11, fontName=FONT_BOLD, textColor=SECONDARY_COLOR, alignment=1)
+    header_style = ParagraphStyle('SchoolHead', parent=styles['Normal'], fontSize=16, leading=22, fontName=FONT_BOLD, textColor=PRIMARY_COLOR, alignment=1, spaceAfter=3)
+    tag_style = ParagraphStyle('SchoolTag', parent=styles['Normal'], fontSize=8.5, leading=12.5, fontName=FONT_REGULAR, textColor=DARK_TEXT, alignment=1, spaceAfter=2)
+    card_title = ParagraphStyle('CardTitle', parent=styles['Normal'], fontSize=11, leading=15, fontName=FONT_BOLD, textColor=SECONDARY_COLOR, alignment=1, spaceBefore=3)
     body_bold = ParagraphStyle('RCBold', parent=styles['Normal'], fontSize=8.5, fontName=FONT_BOLD)
     body_norm = ParagraphStyle('RCNorm', parent=styles['Normal'], fontSize=8.5, fontName=FONT_REGULAR)
     center_norm = ParagraphStyle('RCCenter', parent=styles['Normal'], fontSize=8.5, fontName=FONT_REGULAR, alignment=1)
@@ -372,9 +374,10 @@ def _build_single_result_card_story(student, exam_name, academic_year, results, 
     logo_img = get_school_logo_flowable(school_setting, width=38*mm, height=38*mm)
     head_text = [
         Paragraph(clean_pdf_text(school_setting.school_name.upper()), header_style),
+        Spacer(1, 2 * mm),
         Paragraph(f"{clean_pdf_text(school_setting.tagline)} | Reg No: {clean_pdf_text(school_setting.registration_no)}", tag_style),
         Paragraph(f"{clean_pdf_text(school_setting.address)} | Ph: {clean_pdf_text(school_setting.contact_phone)}", tag_style),
-        Spacer(1, 2 * mm),
+        Spacer(1, 3 * mm),
         Paragraph(f"OFFICIAL ACADEMIC PROGRESS REPORT — {clean_pdf_text(exam_name.upper())} ({academic_year})", card_title)
     ]
     
@@ -383,15 +386,15 @@ def _build_single_result_card_story(student, exam_name, academic_year, results, 
         head_table.setStyle(TableStyle([
             ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
             ('ALIGN', (0,0), (0,0), 'CENTER'),
-            ('TOPPADDING', (0,0), (-1,-1), 0),
-            ('BOTTOMPADDING', (0,0), (-1,-1), 2),
+            ('TOPPADDING', (0,0), (-1,-1), 2),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 4),
         ]))
         story.append(head_table)
     else:
         for item in head_text:
             story.append(item)
 
-    story.append(Spacer(1, 4 * mm))
+    story.append(Spacer(1, 5 * mm))
 
     # 2. Student Demographic Table
     std_data = [
@@ -531,8 +534,9 @@ def generate_admit_card_pdf(student, exam, schedules, school_setting):
     doc = SimpleDocTemplate(buffer, pagesize=A4, leftMargin=15 * mm, rightMargin=15 * mm, topMargin=12 * mm, bottomMargin=12 * mm)
     styles = getSampleStyleSheet()
 
-    title_style = ParagraphStyle('AdmitTitle', parent=styles['Normal'], fontSize=15, fontName=FONT_BOLD, textColor=PRIMARY_COLOR, alignment=1)
-    tag_style = ParagraphStyle('AdmitTag', parent=styles['Normal'], fontSize=8.5, fontName=FONT_REGULAR, alignment=1)
+    title_style = ParagraphStyle('AdmitTitle', parent=styles['Normal'], fontSize=16, leading=22, fontName=FONT_BOLD, textColor=PRIMARY_COLOR, alignment=1, spaceAfter=3)
+    tag_style = ParagraphStyle('AdmitTag', parent=styles['Normal'], fontSize=8.5, leading=12.5, fontName=FONT_REGULAR, alignment=1, spaceAfter=2)
+    badge_style = ParagraphStyle('AdmitBadge', parent=tag_style, fontSize=11, leading=15, fontName=FONT_BOLD, textColor=SECONDARY_COLOR, spaceBefore=3)
     bold_style = ParagraphStyle('AdmitBold', parent=styles['Normal'], fontSize=8.5, fontName=FONT_BOLD)
     norm_style = ParagraphStyle('AdmitNorm', parent=styles['Normal'], fontSize=8.5, fontName=FONT_REGULAR)
     center_bold = ParagraphStyle('AdmitCBold', parent=styles['Normal'], fontSize=8.5, fontName=FONT_BOLD, alignment=1)
@@ -542,9 +546,10 @@ def generate_admit_card_pdf(student, exam, schedules, school_setting):
     logo_img = get_school_logo_flowable(school_setting, width=32*mm, height=32*mm)
     head_text = [
         Paragraph(clean_pdf_text(school_setting.school_name.upper()), title_style),
+        Spacer(1, 2 * mm),
         Paragraph(f"{clean_pdf_text(school_setting.address)} | Ph: {clean_pdf_text(school_setting.contact_phone)}", tag_style),
         Spacer(1, 2 * mm),
-        Paragraph(f"EXAMINATION ADMIT CARD / ROLL NUMBER SLIP — {clean_pdf_text(exam.title.upper())} ({exam.academic_year})", ParagraphStyle('Badg', parent=tag_style, fontSize=11, fontName=FONT_BOLD, textColor=SECONDARY_COLOR))
+        Paragraph(f"EXAMINATION ADMIT CARD / ROLL NUMBER SLIP — {clean_pdf_text(exam.title.upper())} ({exam.academic_year})", badge_style)
     ]
     
     if logo_img:
@@ -552,13 +557,15 @@ def generate_admit_card_pdf(student, exam, schedules, school_setting):
         head_table.setStyle(TableStyle([
             ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
             ('ALIGN', (0,0), (0,0), 'CENTER'),
+            ('TOPPADDING', (0,0), (-1,-1), 2),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 4),
         ]))
         story.append(head_table)
     else:
         for p in head_text:
             story.append(p)
             
-    story.append(Spacer(1, 4 * mm))
+    story.append(Spacer(1, 5 * mm))
 
     qr_draw = create_qr_drawing(f"ADMIT:{student.roll_no}|EXAM:{exam.title}|CLASS:{student.student_class}-{student.section}", size=55)
     std_info = [
@@ -654,12 +661,15 @@ def generate_admit_card_pdf(student, exam, schedules, school_setting):
 #  4. STUDENT & STAFF ID CARD GENERATOR (MULTI-CARD PRINT LAYOUT WITH LOGO)
 # ═══════════════════════════════════════════════════════════════════════════════
 def generate_id_cards_pdf(items, card_type='student', school_setting=None):
+    if school_setting is None:
+        from .models import SchoolSetting
+        school_setting = SchoolSetting.get_settings()
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4, leftMargin=8 * mm, rightMargin=8 * mm, topMargin=8 * mm, bottomMargin=8 * mm)
     styles = getSampleStyleSheet()
 
-    card_header = ParagraphStyle('IDHead', parent=styles['Normal'], fontSize=7, fontName=FONT_BOLD, textColor=colors.white, alignment=1)
-    card_sub = ParagraphStyle('IDSub', parent=styles['Normal'], fontSize=5, fontName=FONT_REGULAR, textColor=colors.HexColor('#E2E8F0'), alignment=1)
+    card_header = ParagraphStyle('IDHead', parent=styles['Normal'], fontSize=7, leading=9.5, fontName=FONT_BOLD, textColor=colors.white, alignment=1, spaceAfter=1)
+    card_sub = ParagraphStyle('IDSub', parent=styles['Normal'], fontSize=5.5, leading=7.5, fontName=FONT_REGULAR, textColor=colors.HexColor('#E2E8F0'), alignment=1)
     card_name = ParagraphStyle('IDName', parent=styles['Normal'], fontSize=8.5, fontName=FONT_BOLD, textColor=PRIMARY_COLOR, alignment=1)
     body_bold = ParagraphStyle('IDBold', parent=styles['Normal'], fontSize=6.5, fontName=FONT_BOLD)
     body_norm = ParagraphStyle('IDNorm', parent=styles['Normal'], fontSize=6.5, fontName=FONT_REGULAR)
@@ -771,9 +781,9 @@ def generate_certificate_pdf(certificate, school_setting):
     )
     styles = getSampleStyleSheet()
 
-    school_title = ParagraphStyle('CertSchool', parent=styles['Normal'], fontSize=16, fontName=FONT_BOLD, textColor=PRIMARY_COLOR, alignment=1)
-    sub_title = ParagraphStyle('CertSub', parent=styles['Normal'], fontSize=8.5, fontName=FONT_REGULAR, textColor=DARK_TEXT, alignment=1)
-    cert_title = ParagraphStyle('CertTitle', parent=styles['Normal'], fontSize=13, fontName=FONT_BOLD, textColor=SECONDARY_COLOR, alignment=1)
+    school_title = ParagraphStyle('CertSchool', parent=styles['Normal'], fontSize=18, leading=24, fontName=FONT_BOLD, textColor=PRIMARY_COLOR, alignment=1, spaceAfter=4)
+    sub_title = ParagraphStyle('CertSub', parent=styles['Normal'], fontSize=8.5, leading=13, fontName=FONT_REGULAR, textColor=DARK_TEXT, alignment=1, spaceAfter=2)
+    cert_title = ParagraphStyle('CertTitle', parent=styles['Normal'], fontSize=14, leading=18, fontName=FONT_BOLD, textColor=SECONDARY_COLOR, alignment=1, spaceBefore=4, spaceAfter=3)
     body_style = ParagraphStyle('CertBody', parent=styles['Normal'], fontSize=9.5, fontName=FONT_REGULAR, leading=14.5, alignment=4)
     center_bold = ParagraphStyle('CertCBold', parent=styles['Normal'], fontSize=9, fontName=FONT_BOLD, alignment=1)
 
@@ -785,6 +795,7 @@ def generate_certificate_pdf(certificate, school_setting):
     
     head_text = [
         Paragraph(clean_pdf_text(school_setting.school_name.upper()), school_title),
+        Spacer(1, 2 * mm),
         Paragraph(f"{clean_pdf_text(school_setting.tagline)} | Reg No: {clean_pdf_text(school_setting.registration_no)}", sub_title),
         Paragraph(f"{clean_pdf_text(school_setting.address)} | Contact: {clean_pdf_text(school_setting.contact_phone)}", sub_title),
     ]
@@ -794,13 +805,15 @@ def generate_certificate_pdf(certificate, school_setting):
         t_head.setStyle(TableStyle([
             ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
             ('ALIGN', (0,0), (0,0), 'CENTER'),
+            ('TOPPADDING', (0,0), (-1,-1), 2),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 4),
         ]))
         content.append(t_head)
     else:
         for p in head_text:
             content.append(p)
 
-    content.append(Spacer(1, 2 * mm))
+    content.append(Spacer(1, 4 * mm))
     content.append(HRFlowable(width="95%", thickness=1, color=PRIMARY_COLOR, spaceAfter=2*mm))
     content.append(Paragraph(clean_pdf_text(certificate.get_certificate_type_display().upper()), cert_title))
     content.append(Paragraph(f"<b>Certificate No:</b> {clean_pdf_text(certificate.certificate_no)} &nbsp;&nbsp;|&nbsp;&nbsp; <b>Issue Date:</b> {certificate.issue_date}", sub_title))
@@ -890,8 +903,9 @@ def generate_salary_slip_pdf(payroll, school_setting):
     staff = payroll.staff
     story = []
 
-    title_style = ParagraphStyle('PayTitle', parent=styles['Normal'], fontSize=15, fontName=FONT_BOLD, textColor=PRIMARY_COLOR, alignment=1)
-    tag_style = ParagraphStyle('PayTag', parent=styles['Normal'], fontSize=9, fontName=FONT_REGULAR, alignment=1)
+    title_style = ParagraphStyle('PayTitle', parent=styles['Normal'], fontSize=16, leading=22, fontName=FONT_BOLD, textColor=PRIMARY_COLOR, alignment=1, spaceAfter=3)
+    tag_style = ParagraphStyle('PayTag', parent=styles['Normal'], fontSize=9, leading=13, fontName=FONT_REGULAR, alignment=1, spaceAfter=2)
+    badge_style = ParagraphStyle('PayBadge', parent=tag_style, fontSize=11, leading=15, fontName=FONT_BOLD, textColor=SECONDARY_COLOR, spaceBefore=3)
     bold_style = ParagraphStyle('PayBold', parent=styles['Normal'], fontSize=9, fontName=FONT_BOLD)
     norm_style = ParagraphStyle('PayNorm', parent=styles['Normal'], fontSize=9, fontName=FONT_REGULAR)
     right_bold = ParagraphStyle('PayRBold', parent=styles['Normal'], fontSize=9, fontName=FONT_BOLD, alignment=2)
@@ -901,9 +915,10 @@ def generate_salary_slip_pdf(payroll, school_setting):
     logo_img = get_school_logo_flowable(school_setting, width=32*mm, height=32*mm)
     head_text = [
         Paragraph(clean_pdf_text(school_setting.school_name.upper()), title_style),
+        Spacer(1, 2 * mm),
         Paragraph(f"{clean_pdf_text(school_setting.address)} | Ph: {clean_pdf_text(school_setting.contact_phone)}", tag_style),
         Spacer(1, 2 * mm),
-        Paragraph(f"MONTHLY SALARY SLIP — {clean_pdf_text(payroll.month.upper())} {payroll.year}", ParagraphStyle('Badge', parent=tag_style, fontSize=11, fontName=FONT_BOLD, textColor=SECONDARY_COLOR))
+        Paragraph(f"MONTHLY SALARY SLIP — {clean_pdf_text(payroll.month.upper())} {payroll.year}", badge_style)
     ]
     
     if logo_img:
@@ -911,13 +926,15 @@ def generate_salary_slip_pdf(payroll, school_setting):
         head_table.setStyle(TableStyle([
             ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
             ('ALIGN', (0,0), (0,0), 'CENTER'),
+            ('TOPPADDING', (0,0), (-1,-1), 2),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 4),
         ]))
         story.append(head_table)
     else:
         for p in head_text:
             story.append(p)
             
-    story.append(Spacer(1, 4 * mm))
+    story.append(Spacer(1, 5 * mm))
 
     staff_info = [
         [Paragraph("<b>Employee ID:</b>", norm_style), Paragraph(clean_pdf_text(staff.emp_id), bold_style), Paragraph("<b>Payment Date:</b>", norm_style), Paragraph(str(payroll.payment_date or '—'), norm_style)],

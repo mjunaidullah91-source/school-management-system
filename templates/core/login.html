@@ -58,14 +58,42 @@
       <button type="submit" class="btn-login" id="loginBtn">
         <i class="bi bi-box-arrow-in-right"></i> Sign In
       </button>
-      <div style="margin-top:1.5rem; padding:12px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:12px; font-size:0.75rem; color:rgba(255,255,255,0.8);">
-        <div style="font-weight:700; color:#38BDF8; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">
-          <i class="bi bi-key-fill"></i> Default System Credentials:
+      <div style="margin-top:1.5rem; padding:12px 14px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:12px; font-size:0.76rem; color:rgba(255,255,255,0.85);">
+        <div style="font-weight:700; color:#38BDF8; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+          <span><i class="bi bi-key-fill"></i> System Login Credentials:</span>
+          <span style="font-size:0.68rem; color:rgba(255,255,255,0.6);">Click role to autofill</span>
         </div>
-        <div style="display:grid; grid-template-columns:1fr; gap:4px; line-height:1.4;">
-          <div>👑 <strong>Admin Portal:</strong> <code>admin</code> / <code>admin</code></div>
-          <div>👨‍🏫 <strong>Teacher Portal:</strong> <code>teacher</code> / <code>teacher123</code></div>
-          <div>🎓 <strong>Student Portal:</strong> <code>student</code> / <code>student123</code></div>
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <button type="button" onclick="fillCreds('admin', 'admin')" 
+                  style="background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:6px 10px; color:#fff; display:flex; justify-content:space-between; align-items:center; cursor:pointer; font-size:0.75rem; text-align:left; transition:background 0.2s;"
+                  onmouseover="this.style.background='rgba(56,189,248,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.07)'">
+            <span>👑 <strong>Admin:</strong> <code>admin</code> / <code>admin</code></span>
+            <span style="color:#38BDF8; font-weight:600;"><i class="bi bi-arrow-right-short"></i> Autofill</span>
+          </button>
+          <button type="button" onclick="fillCreds('teacher', 'teacher123')" 
+                  style="background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:6px 10px; color:#fff; display:flex; justify-content:space-between; align-items:center; cursor:pointer; font-size:0.75rem; text-align:left; transition:background 0.2s;"
+                  onmouseover="this.style.background='rgba(56,189,248,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.07)'">
+            <span>👨‍🏫 <strong>Teacher:</strong> <code>teacher</code> / <code>teacher123</code></span>
+            <span style="color:#38BDF8; font-weight:600;"><i class="bi bi-arrow-right-short"></i> Autofill</span>
+          </button>
+          <button type="button" onclick="fillCreds('accountant', 'accountant123')" 
+                  style="background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:6px 10px; color:#fff; display:flex; justify-content:space-between; align-items:center; cursor:pointer; font-size:0.75rem; text-align:left; transition:background 0.2s;"
+                  onmouseover="this.style.background='rgba(56,189,248,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.07)'">
+            <span>💼 <strong>Accountant (Fee Dept):</strong> <code>accountant</code> / <code>accountant123</code></span>
+            <span style="color:#38BDF8; font-weight:600;"><i class="bi bi-arrow-right-short"></i> Autofill</span>
+          </button>
+          <button type="button" onclick="fillCreds('student', 'student123')" 
+                  style="background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:6px 10px; color:#fff; display:flex; justify-content:space-between; align-items:center; cursor:pointer; font-size:0.75rem; text-align:left; transition:background 0.2s;"
+                  onmouseover="this.style.background='rgba(56,189,248,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.07)'">
+            <span>🎓 <strong>Student:</strong> <code>student</code> / <code>student123</code></span>
+            <span style="color:#38BDF8; font-weight:600;"><i class="bi bi-arrow-right-short"></i> Autofill</span>
+          </button>
+          <button type="button" onclick="fillCreds('1001', '12345678')" 
+                  style="background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:6px 10px; color:#fff; display:flex; justify-content:space-between; align-items:center; cursor:pointer; font-size:0.75rem; text-align:left; transition:background 0.2s;"
+                  onmouseover="this.style.background='rgba(56,189,248,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.07)'">
+            <span>👦 <strong>Student (Roll 1001):</strong> <code>1001</code> / <code>12345678</code></span>
+            <span style="color:#38BDF8; font-weight:600;"><i class="bi bi-arrow-right-short"></i> Autofill</span>
+          </button>
         </div>
       </div>
 
@@ -77,6 +105,14 @@
 </div>
 
 <script>
+  function fillCreds(u, p) {
+    const userField = document.getElementById('id_username');
+    const pwdField = document.getElementById('id_password');
+    userField.value = u;
+    pwdField.value = p;
+    userField.focus();
+  }
+
   // Password toggle
   document.getElementById('togglePwd').addEventListener('click', function() {
     const pwd = document.getElementById('id_password');

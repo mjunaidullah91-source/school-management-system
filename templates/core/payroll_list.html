@@ -19,7 +19,10 @@
 <div class="card fade-in">
   <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
     <div class="card-title"><i class="bi bi-cash-coin text-primary"></i> Monthly Staff Salary Register</div>
-    <div class="actions-group">
+    <div class="actions-group" style="display:flex; gap:8px; flex-wrap:wrap;">
+      <a href="{% url 'teacher_salary_list' %}" class="btn btn-warning btn-sm" style="color:#78350F; font-weight:600; background:#FEF3C7; border-color:#FDE68A;">
+        <i class="bi bi-cash-coin"></i> Teacher Salaries Desk
+      </a>
       <a href="{% url 'export_payroll_excel' %}" class="btn btn-outline btn-sm">
         <i class="bi bi-file-earmark-excel-fill text-success"></i> Export Excel
       </a>
@@ -64,7 +67,7 @@
             <th>Deductions</th>
             <th>Net Salary</th>
             <th>Status</th>
-            <th>Salary Slip</th>
+            <th style="text-align:right;">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -83,9 +86,14 @@
                   {{ p.status }}
                 </span>
               </td>
-              <td>
-                <a href="{% url 'payroll_slip_pdf' p.pk %}" target="_blank" class="btn btn-xs btn-outline">
-                  <i class="bi bi-printer-fill"></i> Pay Slip (PDF)
+              <td style="text-align:right; white-space:nowrap;">
+                {% if p.status != 'Paid' %}
+                  <a href="{% url 'teacher_salary_status_update' p.pk 'Paid' %}" class="btn btn-xs btn-success" title="Mark as Paid">
+                    <i class="bi bi-check-circle-fill"></i> Mark Paid
+                  </a>
+                {% endif %}
+                <a href="{% url 'payroll_slip_pdf' p.pk %}" target="_blank" class="btn btn-xs btn-outline" title="Print Salary Slip">
+                  <i class="bi bi-printer-fill"></i> Slip (PDF)
                 </a>
               </td>
             </tr>

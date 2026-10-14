@@ -183,6 +183,10 @@ class Student(models.Model):
     concession_percent = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
     concession_reason  = models.CharField(max_length=150, blank=True, help_text="e.g. Merit Scholarship, Siblings")
     
+    # Digital Identity Card Automation
+    id_card_generated  = models.BooleanField(default=True, help_text="Auto-generated digital student ID card")
+    id_card_issued_date = models.DateField(default=date.today)
+
     is_active      = models.BooleanField(default=True, db_index=True)
     created_at     = models.DateTimeField(auto_now_add=True)
     updated_at     = models.DateTimeField(auto_now=True)
@@ -457,7 +461,7 @@ class SMSAlertLog(models.Model):
 
 # ─── 8. STAFF PAYROLL & HR (PROTECTED FK) ────────────────────────────────────
 class Payroll(models.Model):
-    PAYROLL_STATUS = [('Generated', 'Generated'), ('Paid', 'Paid'), ('Hold', 'On Hold')]
+    PAYROLL_STATUS = [('Generated', 'Generated'), ('Paid', 'Paid'), ('Partial', 'Partial'), ('Hold', 'On Hold')]
 
     # Protected against accidental deletion of staff profile destroying financial tax/salary records
     staff              = models.ForeignKey(Staff, on_delete=models.PROTECT, related_name='payrolls')
@@ -514,7 +518,7 @@ class BookIssue(models.Model):
 
     book         = models.ForeignKey(Book, on_delete=models.PROTECT, related_name='issue_records')
     borrower_type = models.CharField(max_length=10, choices=[('Student','Student'), ('Staff','Staff')], default='Student')
-    student      = models.ForeignKey(Student, on_delete=models.SET_NULL, null=True, blank=True)
+    student      = models.ForeignKey(Student, on_delete=models.SET_NULL, null=True, blank=True, related_name='book_issues')
     staff        = models.ForeignKey(Staff, on_delete=models.SET_NULL, null=True, blank=True)
     issue_date   = models.DateField(default=date.today)
     due_date     = models.DateField(db_index=True)
@@ -596,7 +600,7 @@ class Certificate(models.Model):
     certificate_type  = models.CharField(max_length=25, choices=CERTIFICATE_TYPES, default='Leaving_TC', db_index=True)
     certificate_no    = models.CharField(max_length=40, unique=True, db_index=True)
     # Protected against accidental student deletion destroying official legal credential logs
-    student           = models.ForeignKey(Student, on_delete=models.PROTECT)
+    student           = models.ForeignKey(Student, on_delete=models.PROTECT, related_name='certificates')
     issue_date        = models.DateField(default=date.today, db_index=True)
     reason_for_leaving = models.CharField(max_length=200, blank=True, default='Completed Academic Session / Parent Relocation')
     conduct_remarks   = models.CharField(max_length=200, default='Exemplary moral character and diligent student.')

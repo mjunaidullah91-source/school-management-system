@@ -1,40 +1,79 @@
 {% extends "base.html" %}
-{% block title %}{{ student.name }} | EduManage{% endblock %}
+{% block title %}{{ student.name }} (Roll {{ student.roll_no }}) | Student 360° Profile{% endblock %}
 {% block page_title %}Student 360° Profile Dossier{% endblock %}
 
 {% block content %}
+<!-- ── QUICK STUDENT SEARCH / SWITCHER ─────────────────────── -->
+<div class="card mb-4 fade-in" style="background: linear-gradient(135deg, rgba(37,99,235,0.06), rgba(15,118,110,0.06)); border: 1px solid rgba(37,99,235,0.15);">
+  <div class="card-body py-3" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+    <div style="display:flex; align-items:center; gap:8px;">
+      <i class="bi bi-person-lines-fill text-primary" style="font-size:1.2rem;"></i>
+      <strong style="color:var(--text-primary); font-size:0.95rem;">Student 360° Database Dossier</strong>
+      <span class="badge badge-info" style="font-size:0.75rem;">FK Relational View</span>
+    </div>
+    <form action="{% url 'global_search' %}" method="get" style="display:flex; gap:8px; align-items:center; max-width:440px; width:100%;">
+      <div style="position:relative; width:100%;">
+        <i class="bi bi-search" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:0.85rem;"></i>
+        <input type="text" name="q" class="form-control" placeholder="Search students, vouchers, or results (Name, Roll, ID)..." style="padding-left:32px; font-size:0.85rem; height:36px; border-radius:8px;" required>
+      </div>
+      <button type="submit" class="btn btn-primary btn-sm" style="white-space:nowrap; height:36px;">
+        <i class="bi bi-arrow-right"></i> Search All
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- ── STUDENT HEADER PROFILE CARD ─────────────────────────── -->
 <div class="profile-header card mb-4 fade-in">
   <div class="card-body" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:20px;">
     <div style="display:flex; align-items:center; gap:20px;">
       {% if student.photo %}
-        <img src="{{ student.photo.url }}" alt="{{ student.name }}" style="width:84px; height:84px; border-radius:50%; object-fit:cover; border:3px solid #2563EB;">
+        <img src="{{ student.photo.url }}" alt="{{ student.name }}" style="width:88px; height:88px; border-radius:50%; object-fit:cover; border:3px solid #2563EB; box-shadow:0 4px 12px rgba(37,99,235,0.2);">
       {% else %}
-        <div class="user-avatar" style="width:84px; height:84px; font-size:32px;">{{ student.name|first|upper }}</div>
+        <div class="user-avatar" style="width:88px; height:88px; font-size:34px; box-shadow:0 4px 12px rgba(37,99,235,0.2);">{{ student.name|first|upper }}</div>
       {% endif %}
       <div>
-        <h2 style="margin:0 0 4px 0;">{{ student.name }}</h2>
+        <h2 style="margin:0 0 6px 0; font-size:1.6rem; font-weight:800;">{{ student.name }}</h2>
         <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-          <span class="badge badge-primary">Roll No: {{ student.roll_no }}</span>
-          <span class="badge badge-info">Class {{ student.student_class }} - Section {{ student.section }}</span>
-          <span class="badge badge-{% if student.is_active %}success{% else %}secondary{% endif %}">{% if student.is_active %}Active Student{% else %}Inactive{% endif %}</span>
+          <span class="badge badge-primary"><i class="bi bi-hash"></i> Roll No: {{ student.roll_no }}</span>
+          <span class="badge badge-info"><i class="bi bi-book"></i> Class {{ student.student_class }} - {{ student.section }}</span>
+          <span class="badge badge-{% if student.is_active %}success{% else %}secondary{% endif %}">
+            <i class="bi bi-person-check-fill"></i> {% if student.is_active %}Active Student{% else %}Inactive{% endif %}
+          </span>
+          {% if student.id_card_generated %}
+            <span class="badge badge-success" title="Issued: {{ student.id_card_issued_date }}">
+              <i class="bi bi-person-badge-fill"></i> Digital ID Card Issued
+            </span>
+          {% else %}
+            <span class="badge badge-warning">
+              <i class="bi bi-clock-history"></i> ID Card Queued
+            </span>
+          {% endif %}
           {% if student.concession_percent > 0 %}
-            <span class="badge badge-warning">{{ student.concession_percent }}% Scholarship Concession</span>
+            <span class="badge badge-warning">
+              <i class="bi bi-percent"></i> {{ student.concession_percent }}% Scholarship Concession
+            </span>
           {% endif %}
         </div>
       </div>
     </div>
+
+    <!-- Action Buttons -->
     <div class="actions-group" style="display:flex; gap:8px; flex-wrap:wrap;">
-      <a href="{% url 'student_reset_password' student.pk %}" class="btn btn-warning btn-sm" onclick="return confirm('Reset password for {{ student.name }} to default: 12345678 ?');">
-        <i class="bi bi-key-fill"></i> Reset Password
-      </a>
-      <a href="{% url 'fee_add' %}?student_id={{ student.pk }}" class="btn btn-outline btn-sm">
-        <i class="bi bi-receipt"></i> Create Fee Voucher
+      <a href="{% url 'student_single_id_card_pdf' student.pk %}" target="_blank" class="btn btn-outline btn-sm" style="border-color:#10B981; color:#065F46; font-weight:600;">
+        <i class="bi bi-person-badge text-success"></i> Digital ID Card (PDF)
       </a>
       <a href="{% url 'result_pdf' student.pk %}" target="_blank" class="btn btn-outline btn-sm">
-        <i class="bi bi-file-earmark-pdf"></i> Result Card
+        <i class="bi bi-file-earmark-pdf text-primary"></i> Result Card (PDF)
+      </a>
+      <a href="{% url 'fee_add' %}?student_id={{ student.pk }}" class="btn btn-outline btn-sm">
+        <i class="bi bi-receipt text-warning"></i> New Fee Voucher
       </a>
       <a href="{% url 'certificate_add' %}?student_id={{ student.pk }}" class="btn btn-outline btn-sm">
-        <i class="bi bi-award"></i> Certificate
+        <i class="bi bi-award text-purple"></i> Issue Certificate
+      </a>
+      <a href="{% url 'student_reset_password' student.pk %}" class="btn btn-warning btn-sm" onclick="return confirm('Reset portal password for {{ student.name }} to default: 12345678 ?');">
+        <i class="bi bi-key-fill"></i> Reset Pass
       </a>
       <a href="{% url 'student_edit' student.pk %}" class="btn btn-primary btn-sm">
         <i class="bi bi-pencil-square"></i> Edit Profile
@@ -52,7 +91,7 @@
     <div class="stat-info">
       <span class="stat-label">Total Fees Cleared</span>
       <h3>PKR {{ paid_total|floatformat:2 }}</h3>
-      <span class="stat-sub text-success">Verified</span>
+      <span class="stat-sub text-success"><i class="bi bi-check-circle"></i> Paid & Verified</span>
     </div>
   </div>
 
@@ -63,7 +102,7 @@
     <div class="stat-info">
       <span class="stat-label">Outstanding Balance</span>
       <h3 class="{% if due_total > 0 %}text-danger{% else %}text-success{% endif %}">PKR {{ due_total|floatformat:2 }}</h3>
-      <span class="stat-sub">Due Amount</span>
+      <span class="stat-sub">Pending Arrears</span>
     </div>
   </div>
 
@@ -74,13 +113,24 @@
     <div class="stat-info">
       <span class="stat-label">Term Attendance</span>
       <h3>{{ attendance_pct }}%</h3>
-      <span class="stat-sub text-muted">Attendance Rate</span>
+      <span class="stat-sub text-muted">Academic Presence</span>
+    </div>
+  </div>
+
+  <div class="stat-card fade-in">
+    <div class="stat-icon icon-teal">
+      <i class="bi bi-book-half"></i>
+    </div>
+    <div class="stat-info">
+      <span class="stat-label">Library Books Borrowed</span>
+      <h3>{{ book_issues.count }}</h3>
+      <span class="stat-sub text-muted">Circulation Record</span>
     </div>
   </div>
 </div>
 
-<div class="row-2col">
-  <!-- Personal & Contact Information -->
+<div class="row-2col mb-4">
+  <!-- Personal & Demographic Information -->
   <div class="card fade-in">
     <div class="card-header">
       <div class="card-title"><i class="bi bi-person-vcard-fill text-primary"></i> Demographic & Contact Record</div>
@@ -97,26 +147,27 @@
               <small class="text-muted ms-2">(Default Pass: <code>12345678</code>)</small>
             </td>
           </tr>
-          <tr><td style="width:35%;" class="text-muted">Admission Number</td><td><strong>{{ student.admission_no|default:'—' }}</strong></td></tr>
-          <tr><td class="text-muted">Father's Name</td><td>{{ student.father_name|default:'—' }} ({{ student.father_occupation|default:'N/A' }})</td></tr>
+          <tr><td class="text-muted">Admission Number</td><td><strong>{{ student.admission_no|default:'—' }}</strong></td></tr>
+          <tr><td class="text-muted">Father's Name</td><td>{{ student.father_name|default:'—' }} {% if student.father_occupation %}({{ student.father_occupation }}){% endif %}</td></tr>
           <tr><td class="text-muted">Mother's Name</td><td>{{ student.mother_name|default:'—' }}</td></tr>
           <tr><td class="text-muted">Gender & Blood Group</td><td>{{ student.gender }} &bull; Blood: <strong>{{ student.blood_group }}</strong></td></tr>
           <tr><td class="text-muted">Date of Birth</td><td>{{ student.dob|default:'—' }}</td></tr>
           <tr><td class="text-muted">Admission Date</td><td>{{ student.admission_date }}</td></tr>
+          <tr><td class="text-muted">Digital ID Issued Date</td><td>{{ student.id_card_issued_date|default:'Automated upon Admission' }}</td></tr>
           <tr><td class="text-muted">Primary Contact</td><td>{{ student.contact|default:'—' }}</td></tr>
           <tr><td class="text-muted">Emergency Phone</td><td>{{ student.emergency_contact|default:'—' }}</td></tr>
           <tr><td class="text-muted">Email</td><td>{{ student.email|default:'—' }}</td></tr>
-          <tr><td class="text-muted">Address</td><td>{{ student.address|default:'—' }}</td></tr>
+          <tr><td class="text-muted">Residential Address</td><td>{{ student.address|default:'—' }}</td></tr>
         </tbody>
       </table>
     </div>
   </div>
 
-  <!-- Financial Fee History -->
+  <!-- Financial Fee History & Vouchers (Foreign Key: student.fee_set) -->
   <div class="card fade-in">
     <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
-      <div class="card-title"><i class="bi bi-receipt text-teal"></i> Fee Vouchers Ledger</div>
-      <a href="{% url 'student_fee_detail' student.pk %}" class="btn-link">Full History</a>
+      <div class="card-title"><i class="bi bi-receipt text-teal"></i> Fee Vouchers Ledger (FK: Student)</div>
+      <a href="{% url 'student_fee_detail' student.pk %}" class="btn-link" style="font-size:0.85rem; font-weight:600;">Full Financial History</a>
     </div>
     <div class="card-body p-0">
       <div class="table-responsive">
@@ -125,10 +176,10 @@
             <tr>
               <th>Voucher</th>
               <th>Month/Year</th>
-              <th>Payable</th>
+              <th>Total Fee</th>
               <th>Paid</th>
               <th>Status</th>
-              <th>Print</th>
+              <th>Challan</th>
             </tr>
           </thead>
           <tbody>
@@ -144,14 +195,14 @@
                   </span>
                 </td>
                 <td>
-                  <a href="{% url 'fee_voucher_pdf' fee.pk %}" target="_blank" class="btn btn-xs btn-outline">
+                  <a href="{% url 'fee_voucher_pdf' fee.pk %}" target="_blank" class="btn btn-xs btn-outline" title="Print Fee Challan">
                     <i class="bi bi-printer"></i>
                   </a>
                 </td>
               </tr>
             {% empty %}
               <tr>
-                <td colspan="6" class="text-center py-4 text-muted">No fee records found.</td>
+                <td colspan="6" class="text-center py-4 text-muted">No fee records linked for this student.</td>
               </tr>
             {% endfor %}
           </tbody>
@@ -161,10 +212,10 @@
   </div>
 </div>
 
-<!-- Examination Results Tab -->
-<div class="card mt-4 fade-in">
+<!-- ── ACADEMIC RESULTS & MARKS HISTORY (Foreign Key: student.results) ─────── -->
+<div class="card mb-4 fade-in">
   <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
-    <div class="card-title"><i class="bi bi-award-fill text-warning"></i> Examination Marks & Result History</div>
+    <div class="card-title"><i class="bi bi-award-fill text-warning"></i> Academic Results & Marks History (FK: Student)</div>
     <a href="{% url 'result_pdf' student.pk %}" target="_blank" class="btn btn-primary btn-sm">
       <i class="bi bi-printer-fill"></i> Print Official Result Card (PDF)
     </a>
@@ -172,8 +223,8 @@
   <div class="card-body">
     {% for group_name, results in result_groups.items %}
       <div class="mb-4">
-        <h4 style="color:#1E3A5F; margin-bottom:12px; border-bottom:2px solid #E2E8F0; padding-bottom:6px;">
-          <i class="bi bi-journal-bookmark-fill"></i> {{ group_name }}
+        <h4 style="color:#1E3A5F; margin-bottom:12px; border-bottom:2px solid #E2E8F0; padding-bottom:6px; font-size:1.05rem;">
+          <i class="bi bi-journal-bookmark-fill text-primary"></i> {{ group_name }}
         </h4>
         <div class="table-responsive">
           <table class="table mb-0">
@@ -209,6 +260,178 @@
     {% empty %}
       <p class="text-muted text-center py-4">No examination results recorded for this student.</p>
     {% endfor %}
+  </div>
+</div>
+
+<!-- ── ROW: LIBRARY RECORDS & CERTIFICATES ─────────────────── -->
+<div class="row-2col mb-4">
+  <!-- Library Records (Foreign Key: student.book_issues) -->
+  <div class="card fade-in">
+    <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+      <div class="card-title"><i class="bi bi-journal-album text-purple"></i> Library Lending History (FK: Student)</div>
+      <a href="{% url 'book_issue_add' %}?student_id={{ student.pk }}" class="btn btn-outline btn-xs">
+        <i class="bi bi-plus-circle"></i> Issue Book
+      </a>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th>Book Title</th>
+              <th>Issue Date</th>
+              <th>Due Date</th>
+              <th>Status</th>
+              <th>Fine</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for issue in book_issues %}
+              <tr>
+                <td>
+                  <strong>{{ issue.book.title }}</strong><br>
+                  <small class="text-muted">Code: {{ issue.book.accession_no }}</small>
+                </td>
+                <td>{{ issue.issue_date }}</td>
+                <td>{{ issue.due_date }}</td>
+                <td>
+                  <span class="badge badge-{% if issue.status == 'Returned' %}success{% elif issue.status == 'Overdue' %}danger{% else %}warning{% endif %}">
+                    {{ issue.status }}
+                  </span>
+                </td>
+                <td>
+                  {% if issue.fine_amount > 0 %}
+                    <span class="text-danger font-weight-bold">PKR {{ issue.fine_amount }}</span>
+                  {% else %}
+                    <span class="text-muted">None</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="5" class="text-center py-4 text-muted">No library books borrowed by this student.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Official Certificates (Foreign Key: student.certificates) -->
+  <div class="card fade-in">
+    <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+      <div class="card-title"><i class="bi bi-patch-check-fill text-teal"></i> Official School Certificates (FK: Student)</div>
+      <a href="{% url 'certificate_add' %}?student_id={{ student.pk }}" class="btn btn-outline btn-xs">
+        <i class="bi bi-plus-circle"></i> Generate
+      </a>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th>Certificate No</th>
+              <th>Type</th>
+              <th>Issue Date</th>
+              <th>Print</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for cert in certificates %}
+              <tr>
+                <td><code>{{ cert.certificate_no }}</code></td>
+                <td><strong>{{ cert.certificate_type }}</strong></td>
+                <td>{{ cert.issue_date }}</td>
+                <td>
+                  <a href="{% url 'certificate_pdf' cert.pk %}" target="_blank" class="btn btn-xs btn-primary">
+                    <i class="bi bi-printer"></i> Print PDF
+                  </a>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="4" class="text-center py-4 text-muted">No certificates issued yet for this student.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── ATTENDANCE LOGS & LEAVE APPLICATIONS ─────────────────── -->
+<div class="card mb-4 fade-in">
+  <div class="card-header">
+    <div class="card-title"><i class="bi bi-calendar2-check-fill text-success"></i> Recent Attendance & Leave Applications (FK: Student)</div>
+  </div>
+  <div class="card-body">
+    <div class="row-2col">
+      <div>
+        <h5 style="color:#1E3A5F; margin-bottom:10px; font-size:0.95rem;">Recent Attendance Log (Last 15 Days)</h5>
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Remarks</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for att in attendance|slice:":15" %}
+                <tr>
+                  <td>{{ att.date }}</td>
+                  <td>
+                    <span class="badge badge-{% if att.status == 'Present' %}success{% elif att.status == 'Absent' %}danger{% elif att.status == 'Late' %}warning{% else %}info{% endif %}">
+                      {{ att.status }}
+                    </span>
+                  </td>
+                  <td>{{ att.remarks|default:'—' }}</td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="3" class="text-center py-3 text-muted">No attendance entries recorded.</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <h5 style="color:#1E3A5F; margin-bottom:10px; font-size:0.95rem;">Leave Applications Record</h5>
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead>
+              <tr>
+                <th>Duration</th>
+                <th>Reason</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for leave in leaves %}
+                <tr>
+                  <td>{{ leave.start_date }} to {{ leave.end_date }}</td>
+                  <td>{{ leave.reason|truncatewords:6 }}</td>
+                  <td>
+                    <span class="badge badge-{% if leave.status == 'Approved' %}success{% elif leave.status == 'Rejected' %}danger{% else %}warning{% endif %}">
+                      {{ leave.status }}
+                    </span>
+                  </td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="3" class="text-center py-3 text-muted">No leave applications submitted.</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 {% endblock %}

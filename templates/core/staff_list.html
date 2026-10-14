@@ -7,8 +7,8 @@
   <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
     <div class="card-title"><i class="bi bi-person-lines-fill text-primary"></i> Faculty & Staff Roster</div>
     <div class="actions-group">
-      <a href="{% url 'staff_id_cards_pdf' %}" target="_blank" class="btn btn-outline btn-sm">
-        <i class="bi bi-card-heading text-teal"></i> Staff ID Cards (PDF)
+      <a href="{% url 'staff_id_cards_pdf' %}?department={{ selected_dept|default:'' }}" target="_blank" class="btn btn-outline btn-sm" title="Download High-Resolution Batch Staff ID Cards (PDF)">
+        <i class="bi bi-card-heading text-primary"></i> Bulk Staff ID Cards (HD PDF)
       </a>
       <a href="{% url 'payroll_list' %}" class="btn btn-outline btn-sm">
         <i class="bi bi-wallet2 text-success"></i> Payroll Register

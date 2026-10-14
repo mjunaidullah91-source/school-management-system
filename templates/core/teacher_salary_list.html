@@ -1,0 +1,357 @@
+{% extends "base.html" %}
+{% block title %}Teacher & Faculty Salaries | {{ school_setting.school_name|default:"Ittihad Model School" }}{% endblock %}
+{% block page_title %}Teacher Salary Management{% endblock %}
+
+{% block content %}
+<!-- ── HEADER & QUICK ACTIONS ──────────────────────────────── -->
+<div class="dashboard-header mb-4 fade-in">
+  <div class="welcome-box">
+    <h2><i class="bi bi-cash-coin text-amber"></i> Teacher & Faculty Salaries Desk</h2>
+    <p class="text-muted">
+      Financial Year <strong>{{ selected_year }}</strong> &bull; Period: <strong>{{ selected_month }} {{ selected_year }}</strong> &bull; 
+      Authorized: <strong>{{ request.user.get_full_name|default:request.user.username }} ({{ user_role_label }})</strong>
+    </p>
+  </div>
+  <div class="quick-actions-bar">
+    <a href="{% url 'export_payroll_excel' %}" class="btn btn-outline btn-sm">
+      <i class="bi bi-file-earmark-excel-fill text-success"></i> Export Payroll (Excel)
+    </a>
+    <a href="{% url 'payroll_generate' %}" class="btn btn-outline btn-sm">
+      <i class="bi bi-lightning-charge-fill text-primary"></i> Batch Generate Payroll
+    </a>
+    <a href="{% url 'payroll_list' %}" class="btn btn-outline btn-sm">
+      <i class="bi bi-wallet2"></i> Full Staff Payroll
+    </a>
+  </div>
+</div>
+
+<!-- ── KPI METRICS CARDS ───────────────────────────────────── -->
+<div class="stat-grid mb-4">
+  <div class="stat-card fade-in">
+    <div class="stat-icon icon-blue">
+      <i class="bi bi-calculator-fill"></i>
+    </div>
+    <div class="stat-info">
+      <span class="stat-label">Total Assigned Budget</span>
+      <h3>PKR {{ total_assigned|floatformat:2 }}</h3>
+      <span class="stat-sub text-muted">{{ total_teachers }} Faculty Members</span>
+    </div>
+  </div>
+
+  <div class="stat-card fade-in">
+    <div class="stat-icon icon-green">
+      <i class="bi bi-check-circle-fill"></i>
+    </div>
+    <div class="stat-info">
+      <span class="stat-label">Total Disbursed (Paid)</span>
+      <h3 style="color:#16A34A;">PKR {{ total_paid|floatformat:2 }}</h3>
+      <span class="stat-sub text-success">{{ paid_count }} Teachers Cleared ({{ cleared_pct }}%)</span>
+    </div>
+  </div>
+
+  <div class="stat-card fade-in">
+    <div class="stat-icon icon-amber">
+      <i class="bi bi-hourglass-split"></i>
+    </div>
+    <div class="stat-info">
+      <span class="stat-label">Pending Dues & Balances</span>
+      <h3 style="color:#D97706;">PKR {{ total_pending|floatformat:2 }}</h3>
+      <span class="stat-sub text-warning">{{ pending_count }} Teachers Awaiting Payment</span>
+    </div>
+  </div>
+
+  <div class="stat-card fade-in">
+    <div class="stat-icon icon-teal">
+      <i class="bi bi-pie-chart-fill"></i>
+    </div>
+    <div class="stat-info">
+      <span class="stat-label">Disbursement Rate</span>
+      <h3>{{ cleared_pct }}%</h3>
+      <div class="progress mt-2" style="height:6px;">
+        <div class="progress-bar bg-success" style="width: {{ cleared_pct }}%;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── FILTER & SEARCH TOOLBAR ─────────────────────────────── -->
+<div class="card mb-4 fade-in">
+  <div class="card-header" style="background:#F8FAFC; border-bottom:1px solid #E2E8F0;">
+    <form method="get" class="filter-form" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center; width:100%;">
+      <!-- Search Input -->
+      <div style="position:relative; flex:1 1 200px; min-width:180px;">
+        <i class="bi bi-search" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); font-size:0.82rem; color:#64748B;"></i>
+        <input type="text" name="q" value="{{ search_query }}" class="form-control form-control-sm" placeholder="Search teacher, Emp ID, role..." style="padding-left:30px;">
+      </div>
+
+      <!-- Month Selector -->
+      <select name="month" class="form-select form-select-sm" style="max-width:140px;">
+        {% for m, m_lbl in months %}
+          <option value="{{ m }}" {% if selected_month == m %}selected{% endif %}>{{ m_lbl }}</option>
+        {% endfor %}
+      </select>
+
+      <!-- Year Selector -->
+      <select name="year" class="form-select form-select-sm" style="max-width:110px;">
+        {% for y in years %}
+          <option value="{{ y }}" {% if selected_year == y %}selected{% endif %}>{{ y }}</option>
+        {% endfor %}
+      </select>
+
+      <!-- Payment Status Selector -->
+      <select name="status" class="form-select form-select-sm" style="max-width:130px;">
+        <option value="All" {% if selected_status == 'All' %}selected{% endif %}>All Statuses</option>
+        <option value="Paid" {% if selected_status == 'Paid' %}selected{% endif %}>Paid Only</option>
+        <option value="Partial" {% if selected_status == 'Partial' %}selected{% endif %}>Partial Only</option>
+        <option value="Unpaid" {% if selected_status == 'Unpaid' %}selected{% endif %}>Unpaid Only</option>
+        <option value="Generated" {% if selected_status == 'Generated' %}selected{% endif %}>Generated / Due</option>
+        <option value="Hold" {% if selected_status == 'Hold' %}selected{% endif %}>On Hold</option>
+      </select>
+
+      <!-- Department Selector -->
+      <select name="department" class="form-select form-select-sm" style="max-width:160px;">
+        <option value="Academics" {% if selected_dept == 'Academics' %}selected{% endif %}>Academics / Teaching</option>
+        <option value="All" {% if selected_dept == 'All' %}selected{% endif %}>All Departments</option>
+        {% for d, d_lbl in departments %}
+          {% if d != 'Academics' %}
+            <option value="{{ d }}" {% if selected_dept == d %}selected{% endif %}>{{ d_lbl }}</option>
+          {% endif %}
+        {% endfor %}
+      </select>
+
+      <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-funnel"></i> Apply Filter</button>
+      <a href="{% url 'teacher_salary_list' %}" class="btn btn-sm btn-outline">Reset</a>
+    </form>
+  </div>
+
+  <!-- ── TEACHER SALARIES LEDGER TABLE ───────────────────────── -->
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table mb-0" style="width:100%; vertical-align:middle;">
+        <thead>
+          <tr>
+            <th style="width:75px;">Emp ID</th>
+            <th style="min-width:170px;">Teacher Name &amp; Designation</th>
+            <th style="width:105px;">Department</th>
+            <th style="width:115px;">Base Salary</th>
+            <th style="width:120px;">Net Payable</th>
+            <th style="width:105px;">Payment Status</th>
+            <th style="width:130px;">Payment Date</th>
+            <th style="text-align:right; min-width:200px;">Disbursement Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in teacher_records %}
+            <tr>
+              <td>
+                <span class="badge badge-primary">{{ r.staff.emp_id }}</span>
+              </td>
+              <td>
+                <div style="display:flex; align-items:center; gap:10px;">
+                  {% if r.staff.photo %}
+                    <img src="{{ r.staff.photo.url }}" alt="{{ r.staff.name }}" style="width:34px; height:34px; border-radius:50%; object-fit:cover;">
+                  {% else %}
+                    <div class="user-avatar" style="width:34px; height:34px; font-size:13px;">{{ r.staff.name|first|upper }}</div>
+                  {% endif %}
+                  <div>
+                    <strong>{{ r.staff.name }}</strong>
+                    <div class="text-muted" style="font-size:0.75rem;">{{ r.staff.designation }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="badge badge-info">{{ r.staff.department }}</span>
+              </td>
+              <td>
+                <strong>PKR {{ r.basic_salary|floatformat:2 }}</strong>
+              </td>
+              <td>
+                <strong style="color:var(--primary);">PKR {{ r.net_salary|floatformat:2 }}</strong>
+              </td>
+              <td>
+                {% if r.status == 'Paid' %}
+                  <span class="badge badge-success"><i class="bi bi-check-circle-fill"></i> Paid</span>
+                {% elif r.status == 'Partial' %}
+                  <span class="badge badge-warning" style="background:#FEF3C7; color:#B45309; border:1px solid #FCD34D;"><i class="bi bi-pie-chart-fill"></i> Partial</span>
+                {% elif r.status == 'Hold' %}
+                  <span class="badge badge-warning"><i class="bi bi-pause-circle-fill"></i> On Hold</span>
+                {% elif r.status == 'Generated' %}
+                  <span class="badge badge-info"><i class="bi bi-clock-history"></i> Generated</span>
+                {% else %}
+                  <span class="badge badge-danger"><i class="bi bi-hourglass-split"></i> Pending</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if r.payment_date %}
+                  <div style="font-size:0.82rem; font-weight:600; color:#1E293B;">{{ r.payment_date }}</div>
+                  <span class="badge" style="font-size:0.68rem; background:#F1F5F9; color:#475569;">{{ r.payment_mode }}</span>
+                {% else %}
+                  <span class="badge" style="background:#FEF2F2; color:#DC2626; font-size:0.75rem;">Awaiting Payment</span>
+                {% endif %}
+              </td>
+              <td style="text-align:right; white-space:nowrap;">
+                {% if r.payroll %}
+                  {% if r.status != 'Paid' %}
+                    <!-- Direct Action Buttons when Pending / Hold / Generated -->
+                    <a href="{% url 'teacher_salary_status_update' r.payroll.pk 'Paid' %}" class="btn btn-xs btn-success" title="Instant 1-Click Mark as Paid">
+                      <i class="bi bi-check-circle-fill"></i> Mark as Paid
+                    </a>
+                    <button type="button" class="btn btn-xs btn-primary" onclick="openDisburseModal('{{ r.staff.pk }}', '{{ r.staff.name|escapejs }}', '{{ r.basic_salary }}', '{{ r.payroll.allowance }}', '{{ r.payroll.bonus }}', '{{ r.payroll.deductions }}', '{{ r.payroll.payment_mode }}')" title="Pay Salary with Custom Allowances / Deductions">
+                      <i class="bi bi-cash-stack"></i> Pay Salary
+                    </button>
+                  {% else %}
+                    <!-- Already Paid: Salary Slip & Adjustments -->
+                    <a href="{% url 'payroll_slip_pdf' r.payroll.pk %}" target="_blank" class="btn btn-xs btn-outline" title="Print HD Salary Slip (PDF)">
+                      <i class="bi bi-file-earmark-pdf-fill text-danger"></i> Slip (PDF)
+                    </a>
+                    <button type="button" class="btn btn-xs btn-outline" onclick="openDisburseModal('{{ r.staff.pk }}', '{{ r.staff.name|escapejs }}', '{{ r.basic_salary }}', '{{ r.payroll.allowance }}', '{{ r.payroll.bonus }}', '{{ r.payroll.deductions }}', '{{ r.payroll.payment_mode }}')" title="Edit Disbursement Details">
+                      <i class="bi bi-pencil-square"></i> Edit
+                    </button>
+                    <a href="{% url 'teacher_salary_status_update' r.payroll.pk 'Hold' %}" class="btn btn-xs btn-outline" title="Put on Hold">
+                      <i class="bi bi-pause-fill"></i> Hold
+                    </a>
+                  {% endif %}
+                {% else %}
+                  <!-- Unpaid / Pending Teacher: Direct Action Buttons -->
+                  <a href="{% url 'teacher_salary_quick_pay' r.staff.pk %}?month={{ selected_month }}&year={{ selected_year }}" class="btn btn-xs btn-success" title="Instant 1-Click Mark as Paid">
+                    <i class="bi bi-check-circle-fill"></i> Mark as Paid
+                  </a>
+                  <button type="button" class="btn btn-xs btn-primary" onclick="openDisburseModal('{{ r.staff.pk }}', '{{ r.staff.name|escapejs }}', '{{ r.basic_salary }}', '0.00', '0.00', '0.00', 'Bank Transfer')" title="Disburse Salary with custom Allowances / Deductions">
+                    <i class="bi bi-cash-stack"></i> Pay Salary
+                  </button>
+                {% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="8" class="text-center py-5 text-muted">
+                <i class="bi bi-inbox" style="font-size:2.5rem; display:block; margin-bottom:8px; opacity:0.5;"></i>
+                No teacher salary records matching the specified filters ({{ selected_month }} {{ selected_year }}).
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ── SALARY DISBURSEMENT POPUP MODAL ─────────────────────── -->
+<div id="disburseModal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.6); z-index:99999; align-items:center; justify-content:center; padding:16px;">
+  <div class="card fade-in" style="max-width:520px; width:100%; border-radius:16px; box-shadow:0 25px 60px rgba(0,0,0,0.35); overflow:hidden;">
+    <div class="card-header" style="background:#1E3A5F; color:#ffffff; padding:16px 20px; display:flex; justify-content:space-between; align-items:center;">
+      <h5 style="margin:0; color:#ffffff; font-size:1.1rem;"><i class="bi bi-cash-coin text-warning"></i> Record Salary Disbursement</h5>
+      <button type="button" onclick="closeDisburseModal()" style="background:none; border:none; color:#ffffff; font-size:1.2rem; cursor:pointer;">&times;</button>
+    </div>
+    
+    <form id="disburseForm" method="post" action="">
+      {% csrf_token %}
+      <input type="hidden" name="month" value="{{ selected_month }}">
+      <input type="hidden" name="year" value="{{ selected_year }}">
+      
+      <div class="card-body" style="padding:20px;">
+        <div class="alert alert-info py-2 px-3 mb-3" style="font-size:0.85rem;">
+          Faculty Member: <strong id="modalTeacherName">Teacher</strong> &bull; Period: <strong>{{ selected_month }} {{ selected_year }}</strong>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+          <div>
+            <label class="form-label" style="font-size:0.8rem; font-weight:600;">Basic Salary (PKR)</label>
+            <input type="number" step="0.01" name="basic_salary" id="modalBasicSalary" class="form-control form-control-sm" required oninput="calcNetSalary()">
+          </div>
+          <div>
+            <label class="form-label" style="font-size:0.8rem; font-weight:600;">Allowances (PKR)</label>
+            <input type="number" step="0.01" name="allowance" id="modalAllowance" value="0.00" class="form-control form-control-sm" oninput="calcNetSalary()">
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+          <div>
+            <label class="form-label" style="font-size:0.8rem; font-weight:600;">Bonus / Incentive (PKR)</label>
+            <input type="number" step="0.01" name="bonus" id="modalBonus" value="0.00" class="form-control form-control-sm" oninput="calcNetSalary()">
+          </div>
+          <div>
+            <label class="form-label" style="font-size:0.8rem; font-weight:600;">Deductions / Tax (PKR)</label>
+            <input type="number" step="0.01" name="deductions" id="modalDeductions" value="0.00" class="form-control form-control-sm" oninput="calcNetSalary()">
+          </div>
+        </div>
+
+        <div style="background:#F1F5F9; border-radius:10px; padding:12px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-weight:700; color:#334155; font-size:0.9rem;">Estimated Net Payable:</span>
+          <span id="modalNetDisplay" style="font-size:1.15rem; font-weight:800; color:#2563EB;">PKR 0.00</span>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+          <div>
+            <label class="form-label" style="font-size:0.8rem; font-weight:600;">Payment Mode</label>
+            <select name="payment_mode" id="modalPaymentMode" class="form-select form-select-sm">
+              <option value="Bank Transfer">Bank Transfer</option>
+              <option value="Cash">Cash</option>
+              <option value="Cheque">Bank Cheque</option>
+              <option value="Pay Order">Pay Order</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label" style="font-size:0.8rem; font-weight:600;">Disbursement Status</label>
+            <select name="status" class="form-select form-select-sm">
+              <option value="Paid" selected>Mark Paid (Cleared)</option>
+              <option value="Partial">Partial Payment</option>
+              <option value="Generated">Generated (Pending)</option>
+              <option value="Hold">On Hold</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-bottom:12px;">
+          <label class="form-label" style="font-size:0.8rem; font-weight:600;">Payment Date</label>
+          <input type="date" name="payment_date" value="{% now 'Y-m-d' %}" class="form-control form-control-sm">
+        </div>
+
+        <div>
+          <label class="form-label" style="font-size:0.8rem; font-weight:600;">Remarks / Transaction Reference</label>
+          <input type="text" name="remarks" placeholder="e.g. Cleared via Habib Bank Transfer #9842" class="form-control form-control-sm">
+        </div>
+      </div>
+
+      <div class="card-footer" style="padding:14px 20px; background:#F8FAFC; border-top:1px solid #E2E8F0; display:flex; justify-content:flex-end; gap:8px;">
+        <button type="button" class="btn btn-sm btn-outline" onclick="closeDisburseModal()">Cancel</button>
+        <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-check-circle-fill"></i> Save &amp; Disburse</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openDisburseModal(staffId, teacherName, basic, allowance, bonus, deductions, mode) {
+  const form = document.getElementById('disburseForm');
+  form.action = `/salaries/teachers/${staffId}/disburse/`;
+  document.getElementById('modalTeacherName').innerText = teacherName;
+  document.getElementById('modalBasicSalary').value = parseFloat(basic || 0).toFixed(2);
+  document.getElementById('modalAllowance').value = parseFloat(allowance || 0).toFixed(2);
+  document.getElementById('modalBonus').value = parseFloat(bonus || 0).toFixed(2);
+  document.getElementById('modalDeductions').value = parseFloat(deductions || 0).toFixed(2);
+  if (mode) document.getElementById('modalPaymentMode').value = mode;
+  calcNetSalary();
+  const modal = document.getElementById('disburseModal');
+  modal.style.display = 'flex';
+}
+
+function closeDisburseModal() {
+  document.getElementById('disburseModal').style.display = 'none';
+}
+
+function calcNetSalary() {
+  const basic = parseFloat(document.getElementById('modalBasicSalary').value || 0);
+  const allow = parseFloat(document.getElementById('modalAllowance').value || 0);
+  const bonus = parseFloat(document.getElementById('modalBonus').value || 0);
+  const ded = parseFloat(document.getElementById('modalDeductions').value || 0);
+  const net = Math.max(0, (basic + allow + bonus) - ded);
+  document.getElementById('modalNetDisplay').innerText = 'PKR ' + net.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+}
+
+// Close modal on escape key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeDisburseModal();
+});
+</script>
+{% endblock %}

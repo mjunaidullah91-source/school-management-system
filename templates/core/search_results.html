@@ -1,0 +1,351 @@
+{% extends "base.html" %}
+{% block title %}Search Results for "{{ query }}" | EduManage{% endblock %}
+{% block page_title %}System Search Directory{% endblock %}
+
+{% block content %}
+<!-- ── SEARCH HEADER & REFINEMENT BAR ─────────────────────── -->
+<div class="card mb-4 fade-in" style="background: linear-gradient(135deg, rgba(37,99,235,0.06), rgba(16,185,129,0.06)); border: 1px solid rgba(37,99,235,0.18);">
+  <div class="card-body py-4">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+      <div>
+        <h2 style="margin:0 0 4px 0; font-size:1.5rem; font-weight:800; color:var(--text-primary);">
+          <i class="bi bi-search text-primary"></i> Search Results for <span style="color:#2563EB;">"{{ query }}"</span>
+        </h2>
+        <p style="margin:0; font-size:0.88rem; color:var(--text-muted);">
+          Found <strong>{{ total_matches }}</strong> matching record{{ total_matches|pluralize }} across Students, Fee Vouchers, and Examination Results
+        </p>
+      </div>
+
+      <!-- Refine Query Form -->
+      <form action="{% url 'global_search' %}" method="get" style="display:flex; gap:8px; align-items:center; max-width:440px; width:100%;">
+        <div style="position:relative; width:100%;">
+          <i class="bi bi-search" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:0.9rem;"></i>
+          <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Search again by student, roll no, voucher, subject..." 
+                 style="padding-left:36px; height:40px; border-radius:10px; font-size:0.88rem;" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="height:40px; white-space:nowrap; border-radius:10px; padding:0 16px;">
+          <i class="bi bi-arrow-right"></i> Search
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% if total_matches == 0 %}
+  <!-- Empty Results State -->
+  <div class="card text-center py-5 fade-in">
+    <div class="card-body">
+      <div style="font-size:3.5rem; color:#94A3B8; margin-bottom:12px;">
+        <i class="bi bi-search-heart"></i>
+      </div>
+      <h3 style="color:var(--text-primary); margin-bottom:8px;">No records found matching "{{ query }}"</h3>
+      <p style="color:var(--text-muted); max-width:480px; margin:0 auto 20px auto; font-size:0.9rem;">
+        We couldn't find any students, fee vouchers, or examination results containing this keyword. Try searching by partial name, roll number, or voucher code.
+      </p>
+      <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+        <a href="{% url 'student_list' %}" class="btn btn-outline btn-sm">
+          <i class="bi bi-people-fill"></i> View All Students
+        </a>
+        <a href="{% url 'fee_list' %}" class="btn btn-outline btn-sm">
+          <i class="bi bi-cash-stack"></i> View Fee Ledger
+        </a>
+        <a href="{% url 'result_list' %}" class="btn btn-outline btn-sm">
+          <i class="bi bi-bar-chart-fill"></i> View Examination Results
+        </a>
+      </div>
+    </div>
+  </div>
+{% else %}
+
+  <!-- ── CATEGORY TABS ──────────────────────────────────────── -->
+  <div class="filter-tabs mb-4 fade-in" style="display:flex; gap:8px; border-bottom:2px solid #E2E8F0; padding-bottom:8px; overflow-x:auto;">
+    <button type="button" class="btn btn-sm {% if active_tab == 'all' %}btn-primary{% else %}btn-outline{% endif %}" onclick="filterTab('all', this)">
+      <i class="bi bi-grid-fill"></i> All Records <span class="badge badge-light ms-1" style="color:#000;">{{ total_matches }}</span>
+    </button>
+    <button type="button" class="btn btn-sm {% if active_tab == 'students' %}btn-primary{% else %}btn-outline{% endif %}" onclick="filterTab('students', this)">
+      <i class="bi bi-people-fill"></i> Students & ID Cards <span class="badge badge-light ms-1" style="color:#000;">{{ students_count }}</span>
+    </button>
+    <button type="button" class="btn btn-sm {% if active_tab == 'fees' %}btn-primary{% else %}btn-outline{% endif %}" onclick="filterTab('fees', this)">
+      <i class="bi bi-receipt"></i> Fee Vouchers & Challans <span class="badge badge-light ms-1" style="color:#000;">{{ fees_count }}</span>
+    </button>
+    <button type="button" class="btn btn-sm {% if active_tab == 'results' %}btn-primary{% else %}btn-outline{% endif %}" onclick="filterTab('results', this)">
+      <i class="bi bi-award-fill"></i> Examination Results <span class="badge badge-light ms-1" style="color:#000;">{{ results_count }}</span>
+    </button>
+  </div>
+
+  <!-- ── 1. STUDENTS RESULTS SECTION ────────────────────────── -->
+  <div id="section-students" class="search-category-section mb-4 fade-in" {% if active_tab == 'fees' or active_tab == 'results' %}style="display:none;"{% endif %}>
+    <div class="card">
+      <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; background:linear-gradient(to right, rgba(37,99,235,0.06), transparent);">
+        <div class="card-title">
+          <i class="bi bi-people-fill text-primary"></i> Matching Students & Digital ID Cards
+          <span class="badge badge-primary ms-2">{{ students_count }}</span>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <a href="{% url 'student_id_cards_pdf' %}" target="_blank" class="btn btn-outline btn-xs" title="Download Bulk Student ID Cards (PDF)">
+            <i class="bi bi-card-heading text-primary"></i> Bulk ID Cards (HD PDF)
+          </a>
+          <a href="{% url 'student_list' %}?query={{ query }}" class="btn-link" style="font-size:0.85rem; font-weight:600;">
+            Open in Students Directory <i class="bi bi-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        {% if students_count > 0 %}
+          <div class="table-responsive">
+            <table class="table mb-0">
+              <thead>
+                <tr>
+                  <th>Student Name</th>
+                  <th>Roll No</th>
+                  <th>Class & Section</th>
+                  <th>Father's Name</th>
+                  <th>Contact</th>
+                  <th>ID Card Status</th>
+                  <th style="text-align:right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for s in students %}
+                  <tr>
+                    <td>
+                      <div style="display:flex; align-items:center; gap:10px;">
+                        <div class="user-avatar" style="width:36px; height:36px; font-size:14px;">{{ s.name|first|upper }}</div>
+                        <div>
+                          <strong><a href="{% url 'student_detail' s.pk %}" style="color:var(--text-primary); text-decoration:none;">{{ s.name }}</a></strong>
+                          {% if s.admission_no %}
+                            <br><small class="text-muted">Adm: {{ s.admission_no }}</small>
+                          {% endif %}
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="badge badge-primary">{{ s.roll_no }}</span></td>
+                    <td>Class {{ s.student_class }} - {{ s.section }}</td>
+                    <td>{{ s.father_name|default:'—' }}</td>
+                    <td>{{ s.contact|default:'—' }}</td>
+                    <td>
+                      {% if s.id_card_generated %}
+                        <span class="badge badge-success"><i class="bi bi-shield-check"></i> Issued</span>
+                      {% else %}
+                        <span class="badge badge-warning"><i class="bi bi-clock"></i> Queued</span>
+                      {% endif %}
+                    </td>
+                    <td style="text-align:right; white-space:nowrap;">
+                      <a href="{% url 'student_detail' s.pk %}" class="btn btn-xs btn-outline" title="View 360° Profile Dossier">
+                        <i class="bi bi-person-lines-fill"></i> Dossier
+                      </a>
+                      <a href="{% url 'student_single_id_card_pdf' s.pk %}" target="_blank" class="btn btn-xs btn-outline" style="border-color:#10B981; color:#065F46;" title="Download Digital ID Card">
+                        <i class="bi bi-person-badge"></i> ID Card
+                      </a>
+                      <a href="{% url 'fee_add' %}?student_id={{ s.pk }}" class="btn btn-xs btn-outline" title="Create Fee Voucher">
+                        <i class="bi bi-receipt"></i> Voucher
+                      </a>
+                      <a href="{% url 'result_pdf' s.pk %}" target="_blank" class="btn btn-xs btn-outline" title="Print Result Card">
+                        <i class="bi bi-file-earmark-pdf"></i> Result
+                      </a>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="p-4 text-center text-muted">No students matched "{{ query }}".</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 2. FEE VOUCHERS RESULTS SECTION ────────────────────── -->
+  <div id="section-fees" class="search-category-section mb-4 fade-in" {% if active_tab == 'students' or active_tab == 'results' %}style="display:none;"{% endif %}>
+    <div class="card">
+      <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; background:linear-gradient(to right, rgba(16,185,129,0.06), transparent);">
+        <div class="card-title">
+          <i class="bi bi-receipt text-success"></i> Matching Fee Vouchers & Challans
+          <span class="badge badge-success ms-2">{{ fees_count }}</span>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <a href="{% url 'bulk_class_vouchers_pdf' %}" target="_blank" class="btn btn-outline btn-xs" title="Download Bulk Challans (PDF)">
+            <i class="bi bi-receipt text-success"></i> Bulk Challans (PDF)
+          </a>
+          <a href="{% url 'fee_list' %}?q={{ query }}" class="btn-link" style="font-size:0.85rem; font-weight:600;">
+            Open in Fee Ledger <i class="bi bi-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        {% if fees_count > 0 %}
+          <div class="table-responsive">
+            <table class="table mb-0">
+              <thead>
+                <tr>
+                  <th>Voucher #</th>
+                  <th>Student Name</th>
+                  <th>Month & Year</th>
+                  <th>Payable Fee</th>
+                  <th>Paid Amount</th>
+                  <th>Balance</th>
+                  <th>Status</th>
+                  <th style="text-align:right;">Challan & Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for f in fees %}
+                  <tr>
+                    <td><code><strong>{{ f.voucher_no }}</strong></code></td>
+                    <td>
+                      {% if f.student %}
+                        <a href="{% url 'student_detail' f.student.pk %}" style="text-decoration:none; font-weight:600; color:var(--text-primary);">
+                          {{ f.student.name }}
+                        </a>
+                        <small class="text-muted ms-1">(Roll: {{ f.student.roll_no }})</small>
+                      {% else %}
+                        <span class="text-muted">Unlinked</span>
+                      {% endif %}
+                    </td>
+                    <td>{{ f.month }} {{ f.year }}</td>
+                    <td><strong>PKR {{ f.amount|floatformat:2 }}</strong></td>
+                    <td class="text-success font-weight-bold">PKR {{ f.paid_amount|floatformat:2 }}</td>
+                    <td class="{% if f.balance > 0 %}text-danger font-weight-bold{% else %}text-muted{% endif %}">
+                      PKR {{ f.balance|floatformat:2 }}
+                    </td>
+                    <td>
+                      <span class="badge badge-{% if f.status == 'Paid' %}success{% elif f.status == 'Partial' %}warning{% else %}danger{% endif %}">
+                        {{ f.status }}
+                      </span>
+                    </td>
+                    <td style="text-align:right; white-space:nowrap;">
+                      <a href="{% url 'fee_voucher_pdf' f.pk %}" target="_blank" class="btn btn-xs btn-primary" title="Print 3-Copy Bank Challan">
+                        <i class="bi bi-printer"></i> Print Challan
+                      </a>
+                      <a href="{% url 'fee_edit' f.pk %}" class="btn btn-xs btn-outline" title="Edit Voucher">
+                        <i class="bi bi-pencil"></i>
+                      </a>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="p-4 text-center text-muted">No fee vouchers matched "{{ query }}".</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 3. EXAMINATION RESULTS SECTION ─────────────────────── -->
+  <div id="section-results" class="search-category-section mb-4 fade-in" {% if active_tab == 'students' or active_tab == 'fees' %}style="display:none;"{% endif %}>
+    <div class="card">
+      <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; background:linear-gradient(to right, rgba(245,158,11,0.06), transparent);">
+        <div class="card-title">
+          <i class="bi bi-award-fill text-warning"></i> Matching Examination Marks & Grade Sheets
+          <span class="badge badge-warning ms-2">{{ results_count }}</span>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <a href="{% url 'bulk_result_cards_pdf' %}" target="_blank" class="btn btn-outline btn-xs" title="Download Bulk Result Cards (PDF)">
+            <i class="bi bi-file-earmark-pdf-fill text-danger"></i> Bulk Result Cards (HD PDF)
+          </a>
+          <a href="{% url 'result_list' %}?q={{ query }}" class="btn-link" style="font-size:0.85rem; font-weight:600;">
+            Open in Results Ledger <i class="bi bi-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        {% if results_count > 0 %}
+          <div class="table-responsive">
+            <table class="table mb-0">
+              <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>Roll No</th>
+                  <th>Exam Type</th>
+                  <th>Subject</th>
+                  <th>Marks Obtained</th>
+                  <th>Percentage</th>
+                  <th>Grade</th>
+                  <th>GPA</th>
+                  <th style="text-align:right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for r in results %}
+                  <tr>
+                    <td>
+                      {% if r.student %}
+                        <a href="{% url 'student_detail' r.student.pk %}" style="text-decoration:none; font-weight:600; color:var(--text-primary);">
+                          {{ r.student.name }}
+                        </a>
+                      {% else %}
+                        —
+                      {% endif %}
+                    </td>
+                    <td><span class="badge badge-primary">{{ r.student.roll_no }}</span></td>
+                    <td>{{ r.exam_type }} ({{ r.year }})</td>
+                    <td><strong>{{ r.subject.name }}</strong> <small class="text-muted">({{ r.subject.code }})</small></td>
+                    <td><strong>{{ r.marks_obtained }}</strong> / {{ r.max_marks }}</td>
+                    <td>{{ r.percentage }}%</td>
+                    <td>
+                      <span class="badge badge-{% if r.grade == 'A+' or r.grade == 'A' %}success{% elif r.grade == 'F' %}danger{% else %}info{% endif %}">
+                        {{ r.grade }}
+                      </span>
+                    </td>
+                    <td>{{ r.gpa|floatformat:2 }}</td>
+                    <td style="text-align:right; white-space:nowrap;">
+                      <a href="{% url 'result_pdf' r.student.pk %}?exam_type={{ r.exam_type }}&year={{ r.year }}" target="_blank" class="btn btn-xs btn-outline" title="Print Official Result Card">
+                        <i class="bi bi-printer"></i> Result Card
+                      </a>
+                      <a href="{% url 'student_result_detail' r.student.pk %}?exam_type={{ r.exam_type }}&year={{ r.year }}" class="btn btn-xs btn-outline" title="Full Transcript">
+                        <i class="bi bi-journal-check"></i> Transcript
+                      </a>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="p-4 text-center text-muted">No examination results matched "{{ query }}".</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+{% endif %}
+
+<script>
+function filterTab(category, btn) {
+  // Update button active states
+  const buttons = document.querySelectorAll('.filter-tabs button');
+  buttons.forEach(b => {
+    b.classList.remove('btn-primary');
+    b.classList.add('btn-outline');
+  });
+  btn.classList.remove('btn-outline');
+  btn.classList.add('btn-primary');
+
+  // Show/Hide sections
+  const secStudents = document.getElementById('section-students');
+  const secFees = document.getElementById('section-fees');
+  const secResults = document.getElementById('section-results');
+
+  if (category === 'all') {
+    if (secStudents) secStudents.style.display = 'block';
+    if (secFees) secFees.style.display = 'block';
+    if (secResults) secResults.style.display = 'block';
+  } else if (category === 'students') {
+    if (secStudents) secStudents.style.display = 'block';
+    if (secFees) secFees.style.display = 'none';
+    if (secResults) secResults.style.display = 'none';
+  } else if (category === 'fees') {
+    if (secStudents) secStudents.style.display = 'none';
+    if (secFees) secFees.style.display = 'block';
+    if (secResults) secResults.style.display = 'none';
+  } else if (category === 'results') {
+    if (secStudents) secStudents.style.display = 'none';
+    if (secFees) secFees.style.display = 'none';
+    if (secResults) secResults.style.display = 'block';
+  }
+}
+</script>
+{% endblock %}
